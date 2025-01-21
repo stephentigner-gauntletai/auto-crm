@@ -34,11 +34,11 @@
 
 ## Supabase Authentication
 
-- [ ] Configure auth providers:
-    - [ ] Email/password
+- [x] Configure auth providers:
+    - [x] Email/password
     - [ ] OAuth providers (if needed)
-    - [ ] Magic links
-- [ ] Set up auth middleware:
+    - [x] Magic links
+- [x] Set up auth middleware:
 
     ```typescript
     // middleware.ts
@@ -53,14 +53,14 @@
     }
     ```
 
-- [ ] Implement auth hooks:
-    - [ ] useAuth hook
-    - [ ] useUser hook
-    - [ ] useSession hook
-- [ ] Create auth components:
-    - [ ] SignIn form
-    - [ ] SignUp form
-    - [ ] Password reset
+- [x] Implement auth hooks:
+    - [x] useAuth hook
+    - [x] useUser hook
+    - [x] useSession hook
+- [x] Create auth components:
+    - [x] SignIn form
+    - [x] SignUp form
+    - [x] Password reset
     - [ ] Auth provider buttons
 
 ## API Documentation
