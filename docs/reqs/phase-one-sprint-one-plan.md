@@ -6,6 +6,7 @@
 - Set up Next.js and Supabase infrastructure
 - Design and implement database schema
 - Create base API endpoints
+- Configure shadcn/ui components
 
 ## Detailed Implementation Plan
 
@@ -15,6 +16,8 @@
 - Initialize Next.js project with TypeScript:
   - `/app` - Next.js app router components
   - `/components` - Reusable UI components
+    - `/ui` - shadcn/ui components
+    - `/custom` - Custom components
   - `/lib` - Shared utilities and types
   - `/public` - Static assets
   - `/styles` - Global styles and themes
@@ -27,6 +30,15 @@
   - Environment variables management
   - TypeScript configuration
   - ESLint and Prettier setup
+- Configure UI framework:
+  ```bash
+  # Initialize shadcn/ui
+  npx shadcn-ui@latest init
+  ```
+  - Set up Tailwind CSS
+  - Configure component themes
+  - Initialize core components
+  - Set up dark mode
 
 #### Local Development
 - Configure local development:
@@ -34,6 +46,19 @@
   - Set up Supabase local instance
   - Configure development database
   - Set up test environment
+- Initialize core UI components:
+  ```bash
+  # Add commonly used components
+  npx shadcn-ui@latest add button
+  npx shadcn-ui@latest add dialog
+  npx shadcn-ui@latest add dropdown-menu
+  npx shadcn-ui@latest add input
+  npx shadcn-ui@latest add form
+  npx shadcn-ui@latest add table
+  npx shadcn-ui@latest add tabs
+  npx shadcn-ui@latest add card
+  npx shadcn-ui@latest add toast
+  ```
 
 #### Standards & Documentation
 - Create documentation for:
@@ -42,7 +67,11 @@
   - PR review process
   - Testing requirements
 - Set up automated documentation
-- Define component standards
+- Define component standards:
+  - UI component usage guidelines
+  - Theme customization rules
+  - Component composition patterns
+  - Accessibility requirements
 
 ### 2. Database Design
 
@@ -147,6 +176,9 @@
 - TypeScript
 - Jest and Testing Library
 - ESLint/Prettier
+- shadcn/ui
+- Tailwind CSS
+- Radix UI
 
 ## Success Criteria
 - [ ] Next.js project properly configured
@@ -155,6 +187,7 @@
 - [ ] Basic API routes functional
 - [ ] Type system properly set up
 - [ ] Development environment documented
+- [ ] UI components initialized and themed
 - [ ] All tests passing
 
 ## Risks and Mitigations
@@ -163,4 +196,6 @@
 - **Risk**: Type safety across stack
   - *Mitigation*: Generate types from Supabase schema
 - **Risk**: API performance
-  - *Mitigation*: Implement proper caching and query optimization 
+  - *Mitigation*: Implement proper caching and query optimization
+- **Risk**: Component consistency
+  - *Mitigation*: Establish clear component usage guidelines and theme configuration 

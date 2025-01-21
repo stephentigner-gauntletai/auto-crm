@@ -80,6 +80,96 @@
 
 ### 2. Agent Workspace
 
+#### Core Interface
+- Implement shadcn/ui components for agent workspace:
+  ```typescript
+  // app/components/workspace/AgentDashboard.tsx
+  export function AgentDashboard() {
+    return (
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Queue Overview</CardTitle>
+            <CardDescription>Active tickets and assignments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTable 
+              columns={queueColumns}
+              data={queueData}
+              toolbar={
+                <DataTableToolbar>
+                  <DataTableFilter column="priority" />
+                  <DataTableViewOptions />
+                </DataTableToolbar>
+              }
+            />
+          </CardContent>
+        </Card>
+        
+        <div className="grid grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Active Tickets
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <Badge>{activeCount}</Badge>
+                <Progress value={activePercentage} className="w-full" />
+              </div>
+            </CardContent>
+          </Card>
+          {/* Additional metric cards */}
+        </div>
+      </div>
+    )
+  }
+  ```
+
+#### Queue Management
+- Add queue interface components:
+  - Command menu for quick actions
+  - Sheet for ticket details
+  - Dialog for assignments
+  - Toast for notifications
+
+#### Ticket Processing
+- Implement processing interface:
+  ```typescript
+  // app/components/workspace/TicketProcessor.tsx
+  export function TicketProcessor() {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Ticket #{ticketId}</CardTitle>
+          <CardDescription>Process and update ticket status</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="details">
+            <TabsList>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="actions">Actions</TabsTrigger>
+            </TabsList>
+            <TabsContent value="details">
+              <div className="space-y-4">
+                {/* Ticket details form */}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)}>
+                    {/* Form fields using shadcn/ui components */}
+                  </form>
+                </Form>
+              </div>
+            </TabsContent>
+            {/* Other tab contents */}
+          </Tabs>
+        </CardContent>
+      </Card>
+    )
+  }
+  ```
+
 #### Rich Text Editor
 - Integrate React-based editor:
   - TipTap or Slate.js
@@ -130,6 +220,20 @@
 
 ### 3. Performance Metrics
 
+#### Agent Metrics
+- Create metrics dashboard:
+  - Card grid for key metrics
+  - Charts for trends
+  - DataTable for detailed stats
+  - HoverCard for metric details
+
+#### Real-time Updates
+- Implement notification system:
+  - Toast for alerts
+  - Dialog for important updates
+  - Badge for status indicators
+  - Progress for operations
+
 #### Agent Dashboard
 - Create Next.js dashboard:
   - Daily statistics
@@ -172,6 +276,21 @@
 - TipTap/Slate.js
 - React Query
 - Chart.js/D3.js
+- shadcn/ui components:
+  - Card
+  - DataTable
+  - Tabs
+  - Form
+  - Command
+  - Sheet
+  - Dialog
+  - Toast
+  - Progress
+  - Badge
+  - HoverCard
+  - Alert
+  - Button
+  - Select
 
 ## Success Criteria
 - [ ] Queue updates happen in real-time
@@ -189,4 +308,8 @@
 - **Risk**: Data consistency in bulk operations
   - *Mitigation*: Use Supabase transactions and proper error handling
 - **Risk**: Complex state management
-  - *Mitigation*: Utilize React Query for server state management 
+  - *Mitigation*: Utilize React Query for server state management
+- **Risk**: UI responsiveness with real-time updates
+  - *Mitigation*: Implement optimistic updates and proper loading states
+- **Risk**: Complex UI state management
+  - *Mitigation*: Use proper component composition and state management patterns 

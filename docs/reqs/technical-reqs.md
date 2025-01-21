@@ -1,7 +1,7 @@
 Technical requirements for the project are detaled below.
 
 Backend: Supabase -- this is both for database and authentication
-Frontend: Next.js
+Frontend: Next.js with shadcn/ui
 AI: Langchain
 Deployment and hosting: AWS Amplify
 

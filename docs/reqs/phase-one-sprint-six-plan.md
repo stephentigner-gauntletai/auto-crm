@@ -66,6 +66,100 @@
   - Error codes
   - Status page
 
+#### Integration Dashboard
+- Create monitoring interface:
+  ```typescript
+  // app/components/integration/SystemStatus.tsx
+  export function SystemStatus() {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>System Status</CardTitle>
+          <CardDescription>Real-time system health monitoring</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  API Health
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={isHealthy ? "success" : "destructive"}>
+                    {status}
+                  </Badge>
+                  <Progress value={uptime} className="w-full" />
+                </div>
+              </CardContent>
+            </Card>
+            {/* Other monitoring cards */}
+          </div>
+          <DataTable 
+            columns={eventColumns}
+            data={systemEvents}
+            toolbar={
+              <DataTableToolbar>
+                <DataTableFilter column="severity" />
+                <DataTableViewOptions />
+              </DataTableToolbar>
+            }
+          />
+        </CardContent>
+      </Card>
+    )
+  }
+  ```
+
+#### Webhook Management
+- Build webhook interface:
+  - DataTable for endpoints
+  - Dialog for configuration
+  - Alert for failures
+  - Toast for notifications
+
+#### Event System
+- Create event monitoring:
+  ```typescript
+  // app/components/integration/EventMonitor.tsx
+  export function EventMonitor() {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Event Monitor</CardTitle>
+          <CardDescription>Real-time event tracking</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="live">
+            <TabsList>
+              <TabsTrigger value="live">Live Events</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+            <TabsContent value="live">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Badge>Live</Badge>
+                  <Progress value={processedCount} max={totalCount} />
+                </div>
+                <ScrollArea className="h-[400px]">
+                  {events.map(event => (
+                    <Alert key={event.id} variant={event.severity}>
+                      <AlertTitle>{event.type}</AlertTitle>
+                      <AlertDescription>{event.message}</AlertDescription>
+                    </Alert>
+                  ))}
+                </ScrollArea>
+              </div>
+            </TabsContent>
+            {/* History tab content */}
+          </Tabs>
+        </CardContent>
+      </Card>
+    )
+  }
+  ```
+
 ### 2. Testing & QA
 
 #### End-to-End Testing
@@ -115,6 +209,54 @@
   - Bug reporting
   - Feedback collection
   - Session recording
+
+#### Test Runner Interface
+- Create test dashboard:
+  ```typescript
+  // app/components/testing/TestRunner.tsx
+  export function TestRunner() {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Suite</CardTitle>
+            <CardDescription>End-to-end test execution</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Button onClick={runTests}>Run Tests</Button>
+                <Select onValueChange={selectSuite}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Suite" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suites.map(suite => (
+                      <SelectItem key={suite.id} value={suite.id}>
+                        {suite.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Progress value={progress} className="w-full" />
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-2">
+                  {results.map(result => (
+                    <Alert key={result.id} variant={result.status}>
+                      <AlertTitle>{result.name}</AlertTitle>
+                      <AlertDescription>{result.message}</AlertDescription>
+                    </Alert>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+  ```
 
 ### 3. AWS Amplify Deployment
 
@@ -175,6 +317,21 @@
 - AWS Amplify
 - Playwright
 - TypeScript
+- shadcn/ui components:
+  - Card
+  - DataTable
+  - Form
+  - Alert
+  - Progress
+  - Badge
+  - Toast
+  - Dialog
+  - Tabs
+  - Command
+  - Select
+  - ScrollArea
+  - Button
+  - HoverCard
 
 ## Success Criteria
 - [ ] All components properly integrated
@@ -192,4 +349,8 @@
 - **Risk**: Deployment issues
   - *Mitigation*: Proper staging and rollback procedures
 - **Risk**: Performance problems
-  - *Mitigation*: Monitoring and optimization 
+  - *Mitigation*: Monitoring and optimization
+- **Risk**: Dashboard performance with real-time updates
+  - *Mitigation*: Implement proper data pagination and loading states
+- **Risk**: Complex test feedback visualization
+  - *Mitigation*: Create clear visual hierarchies with proper component composition 
