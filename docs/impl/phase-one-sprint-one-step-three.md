@@ -2,7 +2,7 @@
 
 ## Next.js API Routes Setup
 
-- [ ] Create base API structure:
+- [x] Create base API structure:
 
     ```typescript
     // app/api/tickets/route.ts
@@ -16,21 +16,21 @@
     }
     ```
 
-- [ ] Implement core endpoints:
-    - [ ] Authentication routes
-    - [ ] Ticket routes
-    - [ ] User routes
-    - [ ] Team routes
-- [ ] Set up middleware:
-    - [ ] Authentication middleware
-    - [ ] Error handling
-    - [ ] Request validation
-    - [ ] Response formatting
-- [ ] Create API utilities:
-    - [ ] Response helpers
-    - [ ] Error classes
-    - [ ] Validation helpers
-    - [ ] Type guards
+- [x] Implement core endpoints:
+    - [x] Authentication routes
+    - [x] Ticket routes
+    - [x] User routes
+    - [x] Team routes
+- [x] Set up middleware:
+    - [x] Authentication middleware
+    - [x] Error handling
+    - [x] Request validation
+    - [x] Response formatting
+- [x] Create API utilities:
+    - [x] Response helpers
+    - [x] Error classes
+    - [x] Validation helpers
+    - [x] Type guards
 
 ## Supabase Authentication
 
