@@ -3,7 +3,7 @@
 ## Duration: 3 weeks
 
 ## Goals
-- Implement core ticket functionality
+- Implement core ticket functionality with Supabase
 - Create ticket routing system
 - Develop search and filtering capabilities
 
@@ -12,145 +12,142 @@
 ### 1. Core Ticket Features
 
 #### CRUD Operations
-- Implement endpoints for:
+- Implement Next.js API routes:
+  ```typescript
+  // app/api/tickets/route.ts
+  export async function POST(req: Request) {
+    const supabase = createRouteHandlerClient({ cookies });
+    // Create ticket logic
+  }
+
+  // app/api/tickets/[id]/route.ts
+  export async function GET(req: Request, { params }: { params: { id: string } }) {
+    const supabase = createRouteHandlerClient({ cookies });
+    // Get ticket logic
+  }
   ```
-  POST /api/v1/tickets
-  GET /api/v1/tickets/:id
-  PUT /api/v1/tickets/:id
-  DELETE /api/v1/tickets/:id
-  ```
-- Add validation middleware
+- Add server actions for mutations
 - Implement error handling
-- Create request/response DTOs
+- Create request validation
 
 #### Metadata Management
-- Implement status tracking:
-  - New
-  - Open
-  - Pending
-  - Resolved
-  - Closed
-- Add priority levels:
-  - Critical
-  - High
-  - Medium
-  - Low
-- Create tagging system:
-  - Tag CRUD operations
-  - Tag associations
-  - Tag-based queries
+- Create Supabase functions for:
+  - Status transitions
+  - Priority updates
+  - Tag management
+- Implement RLS policies for:
+  - Status changes
+  - Priority access
+  - Tag modifications
 
 #### Conversation System
-- Implement threaded conversations:
-  - Message creation
-  - Reply handling
-  - Conversation tree structure
-- Add support for:
-  - Rich text
-  - File attachments
-  - @mentions
-  - Internal notes
+- Set up realtime subscriptions:
+  - Message streaming
+  - Thread updates
+  - Attachment handling
+- Implement Supabase storage for:
+  - File uploads
+  - Rich content
+  - Media handling
 
 ### 2. Ticket Routing & Assignment
 
 #### Rule-Based Assignment
-- Create rule engine for:
-  - Tag-based routing
-  - Priority-based routing
-  - Time-based routing
-- Implement rule conditions:
-  - Customer attributes
-  - Ticket content
-  - Time of day
-  - Current queue status
+- Create Supabase edge functions:
+  ```typescript
+  // supabase/functions/assign-ticket/index.ts
+  export const assignTicket = async (ticket: Ticket) => {
+    // Routing logic using database rules
+  }
+  ```
+- Implement routing rules in database:
+  - Tag-based matching
+  - Priority routing
+  - Time-based distribution
 
 #### Load Balancing
-- Implement workload distribution:
-  - Agent availability tracking
-  - Queue length monitoring
-  - SLA compliance checking
-- Create balancing algorithms:
-  - Round-robin
-  - Least busy
-  - Skill-based
-  - Priority-weighted
+- Create Supabase functions for:
+  - Agent availability
+  - Queue management
+  - SLA monitoring
+- Implement realtime updates for:
+  - Queue status
+  - Agent status
+  - Workload metrics
 
 #### Team Management
-- Create team structure:
-  - Team CRUD operations
-  - Member management
-  - Role assignments
-- Implement team features:
-  - Team queues
-  - Team metrics
-  - Shift management
+- Set up team structures in Supabase:
+  - Team tables
+  - Member associations
+  - Role definitions
+- Implement team features using RLS:
+  - Access control
+  - Queue visibility
+  - Metric tracking
 
 #### Skills-Based Routing
-- Create skills system:
-  - Skill definitions
-  - Agent skill profiles
-  - Skill requirements for tickets
-- Implement matching algorithm:
-  - Skill level matching
-  - Multiple skill requirements
-  - Fallback routing
+- Create skills system in Supabase:
+  - Skills definition
+  - Agent profiles
+  - Matching rules
+- Implement routing logic:
+  - Database functions
+  - Edge functions
+  - Realtime updates
 
 ### 3. Search & Filtering
 
 #### Search Implementation
-- Set up search engine (Elasticsearch):
-  - Index configuration
-  - Mapping setup
-  - Analyzer configuration
-- Implement search features:
-  - Full-text search
+- Utilize Supabase Full Text Search:
+  - Configure text search
+  - Set up indexes
+  - Implement search API
+- Add search features:
   - Fuzzy matching
   - Relevance scoring
+  - Search suggestions
 
 #### Filter System
-- Create filter types:
+- Implement database views for:
   - Status filters
   - Priority filters
-  - Date range filters
-  - Agent filters
   - Team filters
-  - Custom field filters
-- Implement filter combinations:
-  - AND/OR operations
-  - Nested filters
+  - Custom filters
+- Create filter combinations:
+  - Complex queries
   - Saved filters
+  - Dynamic filtering
 
 #### Sorting & Pagination
-- Implement sorting:
-  - Multiple sort fields
-  - Sort direction
-  - Default sorting
-- Add pagination:
-  - Page size limits
-  - Cursor-based pagination
-  - Result count
-  - Performance optimization
+- Implement efficient queries:
+  - Cursor pagination
+  - Dynamic sorting
+  - Count estimates
+- Optimize performance:
+  - Index usage
+  - Query planning
+  - Cache strategies
 
 ## Dependencies
-- Elasticsearch
-- Redis (for caching)
-- PostgreSQL
-- Queue system (RabbitMQ/Redis)
+- Supabase Client
+- Next.js App Router
+- TypeScript
+- Supabase Storage
+- Edge Functions
 
 ## Success Criteria
-- [ ] All CRUD operations working and tested
-- [ ] Metadata system fully functional
-- [ ] Conversation system implemented
-- [ ] Routing rules working correctly
-- [ ] Load balancing operational
-- [ ] Team management system complete
-- [ ] Search and filtering performing efficiently
-- [ ] All features have adequate test coverage
+- [ ] CRUD operations working with RLS
+- [ ] Realtime updates functioning
+- [ ] Routing rules operating correctly
+- [ ] Search performing efficiently
+- [ ] Filters working as expected
+- [ ] Team management functional
+- [ ] All features properly tested
 
 ## Risks and Mitigations
-- **Risk**: Search performance with large datasets
-  - *Mitigation*: Implement proper indexing and caching strategies
-- **Risk**: Complex routing rules causing delays
-  - *Mitigation*: Optimize rule engine and use caching
-- **Risk**: Load balancing fairness
-  - *Mitigation*: Regular monitoring and algorithm tuning 
+- **Risk**: Complex queries performance
+  - *Mitigation*: Proper indexing and query optimization
+- **Risk**: Realtime scaling
+  - *Mitigation*: Implement proper subscription management
+- **Risk**: Data access control
+  - *Mitigation*: Thorough RLS policy testing 

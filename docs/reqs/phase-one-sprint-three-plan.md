@@ -3,8 +3,8 @@
 ## Duration: 2 weeks
 
 ## Goals
-- Build real-time queue management system
-- Create agent workspace interface
+- Build real-time queue management with Supabase
+- Create Next.js agent workspace
 - Implement performance tracking
 
 ## Detailed Implementation Plan
@@ -12,37 +12,50 @@
 ### 1. Queue Management
 
 #### Real-Time Queue
-- Implement WebSocket connection:
+- Implement Supabase realtime subscriptions:
   ```typescript
-  interface QueueUpdate {
-    ticketId: string;
-    status: TicketStatus;
-    priority: Priority;
-    assignedTo: string;
-    lastUpdated: Date;
-    waitTime: number;
+  // app/hooks/useQueueUpdates.ts
+  export function useQueueUpdates() {
+    const supabase = createClientComponentClient();
+    
+    useEffect(() => {
+      const subscription = supabase
+        .channel('tickets')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'tickets'
+        }, (payload) => {
+          // Handle queue updates
+        })
+        .subscribe();
+        
+      return () => {
+        subscription.unsubscribe();
+      };
+    }, []);
   }
   ```
-- Add real-time features:
+- Add realtime features:
   - Live ticket updates
   - Queue position changes
   - New ticket notifications
   - Assignment alerts
 
 #### Customizable Views
-- Create view components:
-  - List view
-  - Grid view
-  - Kanban board
-  - Calendar view
+- Create Next.js components:
+  - List view (`app/components/tickets/ListView.tsx`)
+  - Grid view (`app/components/tickets/GridView.tsx`)
+  - Kanban board (`app/components/tickets/KanbanBoard.tsx`)
+  - Calendar view (`app/components/tickets/CalendarView.tsx`)
 - Implement view customization:
   - Column selection
   - Sort order
   - Grouping options
-  - Saved views
+  - Saved views in Supabase
 
 #### Bulk Operations
-- Add bulk actions:
+- Create server actions:
   - Mass assign
   - Status updates
   - Priority changes
@@ -54,7 +67,7 @@
   - Batch processing
 
 #### Quick Filters
-- Create filter presets:
+- Create filter components:
   - My tickets
   - Team tickets
   - Unassigned
@@ -68,23 +81,23 @@
 ### 2. Agent Workspace
 
 #### Rich Text Editor
-- Implement editor features:
-  - Formatting tools
-  - Image handling
+- Integrate React-based editor:
+  - TipTap or Slate.js
+  - Image handling with Supabase Storage
   - Link management
   - Code blocks
 - Add support for:
   - Keyboard shortcuts
   - Paste handling
   - Undo/redo
-  - Auto-save
+  - Auto-save to Supabase
 
 #### Template System
 - Create template management:
-  - Template CRUD
+  - Template storage in Supabase
   - Variable substitution
   - Template categories
-  - Version control
+  - Version tracking
 - Implement quick responses:
   - Shortcut keys
   - Search functionality
@@ -92,24 +105,24 @@
   - Usage tracking
 
 #### Customer History View
-- Display customer information:
-  - Contact details
-  - Previous tickets
-  - Interaction history
+- Create Next.js components:
+  - Customer profile
+  - Ticket history
+  - Interaction timeline
   - Custom fields
-- Add timeline features:
+- Implement realtime updates:
   - Activity feed
   - Important events
   - Notes and flags
   - Related tickets
 
 #### Collaboration Tools
-- Implement internal notes:
-  - Private comments
-  - @mentions
+- Set up realtime collaboration:
+  - Internal notes
+  - @mentions with Supabase notifications
   - Team notifications
   - Note categories
-- Add collaboration features:
+- Add team features:
   - Ticket sharing
   - Hand-off notes
   - Team chat
@@ -118,19 +131,19 @@
 ### 3. Performance Metrics
 
 #### Agent Dashboard
-- Create performance views:
+- Create Next.js dashboard:
   - Daily statistics
   - Weekly trends
   - Monthly reports
   - Comparison charts
-- Implement metrics:
+- Implement metrics using Supabase views:
   - Tickets resolved
   - Response times
   - Customer satisfaction
   - SLA compliance
 
 #### Response Time Tracking
-- Track timing metrics:
+- Create Supabase functions for:
   - First response time
   - Resolution time
   - Handle time
@@ -142,7 +155,7 @@
   - Trend analysis
 
 #### Resolution Monitoring
-- Implement resolution tracking:
+- Implement tracking with Supabase:
   - Resolution types
   - Success rates
   - Reopening rates
@@ -154,11 +167,11 @@
   - Knowledge base usage
 
 ## Dependencies
-- React/Vue.js
-- WebSocket server
-- Rich text editor library
-- Charting library
-- State management solution
+- Next.js 14+
+- Supabase Client
+- TipTap/Slate.js
+- React Query
+- Chart.js/D3.js
 
 ## Success Criteria
 - [ ] Queue updates happen in real-time
@@ -171,9 +184,9 @@
 - [ ] All features have adequate test coverage
 
 ## Risks and Mitigations
-- **Risk**: Real-time performance issues
-  - *Mitigation*: Implement proper WebSocket optimization and fallback mechanisms
+- **Risk**: Realtime performance at scale
+  - *Mitigation*: Implement proper subscription management and cleanup
 - **Risk**: Data consistency in bulk operations
-  - *Mitigation*: Use transactions and proper error handling
-- **Risk**: Template system complexity
-  - *Mitigation*: Implement proper versioning and validation 
+  - *Mitigation*: Use Supabase transactions and proper error handling
+- **Risk**: Complex state management
+  - *Mitigation*: Utilize React Query for server state management 
