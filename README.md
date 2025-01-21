@@ -54,4 +54,5 @@ npm run dev
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Contributions are not currently accepted.
+This is part of my work for the GauntletAI fellowship.
