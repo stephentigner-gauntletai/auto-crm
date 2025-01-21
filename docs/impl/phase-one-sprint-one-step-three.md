@@ -74,16 +74,16 @@
     - [x] Ticket endpoints
     - [x] User endpoints
     - [x] Team endpoints
-- [ ] Create usage examples:
-    - [ ] Authentication flows
-    - [ ] CRUD operations
-    - [ ] Realtime subscriptions
-    - [ ] File uploads
-- [ ] Add API guidelines:
-    - [ ] Error handling
-    - [ ] Rate limiting
-    - [ ] Authentication
-    - [ ] Best practices
+- [x] Create usage examples:
+    - [x] Authentication flows
+    - [x] CRUD operations
+    - [x] Realtime subscriptions
+    - [x] File uploads
+- [x] Add API guidelines:
+    - [x] Error handling
+    - [x] Rate limiting
+    - [x] Authentication
+    - [x] Best practices
 
 ## Testing Framework
 
