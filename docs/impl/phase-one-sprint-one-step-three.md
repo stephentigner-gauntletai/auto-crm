@@ -65,15 +65,15 @@
 
 ## API Documentation
 
-- [ ] Set up documentation framework:
-    - [ ] Choose documentation tool
-    - [ ] Configure auto-generation
-    - [ ] Set up hosting
-- [ ] Document endpoints:
-    - [ ] Authentication endpoints
-    - [ ] Ticket endpoints
-    - [ ] User endpoints
-    - [ ] Team endpoints
+- [x] Set up documentation framework:
+    - [x] Choose documentation tool (Swagger/OpenAPI)
+    - [x] Configure auto-generation
+    - [x] Set up hosting
+- [x] Document endpoints:
+    - [x] Authentication endpoints
+    - [x] Ticket endpoints
+    - [x] User endpoints
+    - [x] Team endpoints
 - [ ] Create usage examples:
     - [ ] Authentication flows
     - [ ] CRUD operations
