@@ -11,7 +11,10 @@
 		"format": "prettier --write .",
 		"type-check": "tsc --noEmit",
 		"pre-commit": "lint-staged",
-		"docs": "typedoc"
+		"docs": "typedoc",
+		"db:migrate": "./scripts/db-migrate.sh",
+		"db:reset": "./scripts/db-migrate.sh reset",
+		"db:seed": "npx supabase db reset"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.10.0",
@@ -47,6 +50,7 @@
 		"lint-staged": "^15.4.1",
 		"postcss": "^8",
 		"prettier": "^3.4.2",
+		"supabase": "^2.6.8",
 		"tailwindcss": "^3.4.1",
 		"typedoc": "^0.27.6",
 		"typedoc-plugin-markdown": "^4.4.1",
