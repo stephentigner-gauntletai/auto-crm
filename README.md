@@ -44,6 +44,46 @@ Edit `.env.local` with your configuration.
 npm run dev
 ```
 
+## CI/CD Configuration
+
+The project uses GitHub Actions for CI/CD and AWS Amplify for deployment. Three workflows are configured:
+
+### 1. Continuous Integration (`ci.yml`)
+Runs on every push and pull request to main:
+- Type checking
+- Linting
+- Format checking
+- Build verification
+
+### 2. Deployment (`deploy.yml`)
+Runs on push to main:
+- Builds the application
+- Deploys to AWS Amplify production environment
+
+### 3. Preview Deployments (`preview.yml`)
+Runs on pull requests:
+- Creates a preview environment
+- Posts preview URL as a comment on the PR
+
+### Required GitHub Secrets
+
+The following secrets need to be configured in GitHub repository settings:
+
+```
+AWS_ACCESS_KEY_ID          # AWS access key for deployment
+AWS_SECRET_ACCESS_KEY      # AWS secret key for deployment
+AWS_REGION                 # AWS region (e.g., us-east-1)
+NEXT_PUBLIC_SUPABASE_URL   # Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY  # Supabase anonymous key
+AMPLIFY_APP_ID             # AWS Amplify application ID
+```
+
+To set up these secrets:
+1. Go to your GitHub repository
+2. Navigate to Settings > Secrets and variables > Actions
+3. Click "New repository secret"
+4. Add each secret with its corresponding value
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
