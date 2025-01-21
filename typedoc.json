@@ -1,0 +1,23 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./components/**/*.{ts,tsx}",
+    "./lib/**/*.{ts,tsx}",
+    "./types/**/*.{ts,tsx}"
+  ],
+  "exclude": ["**/node_modules/**"],
+  "out": "docs/api",
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "name": "Auto-CRM API Documentation",
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "categoryOrder": ["Components", "Hooks", "Utilities", "*"],
+  "cleanOutputDir": true,
+  "readme": "none",
+  "sort": ["source-order"],
+  "validation": {
+    "invalidLink": true,
+    "notExported": true
+  }
+} 
