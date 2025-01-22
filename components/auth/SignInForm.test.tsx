@@ -1,72 +1,141 @@
 import React from 'react';
-import { render } from '../../test/test-utils';
+import { render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom/types';
+import userEvent from '@testing-library/user-event';
 import { SignInForm } from './SignInForm';
-import {
-	mockSupabaseClient,
-	createMockResponse,
-	createMockError,
-	setupMocks,
-} from '../../test/test-utils';
+import { useAuth } from '../../hooks/auth/useAuth';
+import { useToast } from '../../components/ui/use-toast';
+import '@testing-library/jest-dom';
+
+// Mock the auth hook
+jest.mock('../../hooks/auth/useAuth', () => ({
+	useAuth: jest.fn(),
+}));
+
+// Mock the toast hook
+jest.mock('../../components/ui/use-toast', () => ({
+	useToast: jest.fn(() => ({
+		toast: jest.fn(),
+	})),
+}));
 
 describe('SignInForm', () => {
+	const mockSignIn = jest.fn();
+	const mockToast = jest.fn();
+
 	beforeEach(() => {
-		setupMocks();
+		(useAuth as jest.Mock).mockReturnValue({
+			signIn: mockSignIn,
+			loading: false,
+		});
+		(useToast as jest.Mock).mockReturnValue({
+			toast: mockToast,
+		});
 	});
 
-	it('renders the sign in form', () => {
-		const { getByRole, getByLabelText } = render(<SignInForm />);
-
-		expect(getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
-		expect(getByLabelText(/email/i)).toBeInTheDocument();
-		expect(getByLabelText(/password/i)).toBeInTheDocument();
-		expect(getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+	afterEach(() => {
+		jest.clearAllMocks();
 	});
 
-	it('handles successful sign in', async () => {
-		mockSupabaseClient.auth.signInWithPassword.mockResolvedValueOnce(
-			createMockResponse({ user: { id: '123', email: 'test@example.com' } })
-		);
+	it('renders the sign-in form', () => {
+		render(<SignInForm />);
 
-		const { getByRole, getByLabelText, getByText, user } = render(<SignInForm />);
+		expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
+		expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+		expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+	});
 
-		await user.type(getByLabelText(/email/i), 'test@example.com');
-		await user.type(getByLabelText(/password/i), 'password123');
-		await user.click(getByRole('button', { name: /sign in/i }));
+	it('validates required fields', async () => {
+		render(<SignInForm />);
 
-		// Wait for the API call
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		const submitButton = screen.getByRole('button', { name: /sign in/i });
+		await userEvent.click(submitButton);
 
-		expect(mockSupabaseClient.auth.signInWithPassword).toHaveBeenCalledWith({
-			email: 'test@example.com',
-			password: 'password123',
+		expect(await screen.findByText(/email is required/i)).toBeInTheDocument();
+		expect(await screen.findByText(/password is required/i)).toBeInTheDocument();
+	});
+
+	it('validates email format', async () => {
+		render(<SignInForm />);
+
+		const emailInput = screen.getByLabelText(/email/i);
+		await userEvent.type(emailInput, 'invalid-email');
+
+		const submitButton = screen.getByRole('button', { name: /sign in/i });
+		await userEvent.click(submitButton);
+
+		expect(await screen.findByText(/invalid email address/i)).toBeInTheDocument();
+	});
+
+	it('handles successful sign-in', async () => {
+		mockSignIn.mockResolvedValueOnce({ error: null });
+
+		render(<SignInForm />);
+
+		const emailInput = screen.getByLabelText(/email/i);
+		const passwordInput = screen.getByLabelText(/password/i);
+		const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+		await userEvent.type(emailInput, 'test@example.com');
+		await userEvent.type(passwordInput, 'password123');
+		await userEvent.click(submitButton);
+
+		await waitFor(() => {
+			expect(mockSignIn).toHaveBeenCalledWith({
+				email: 'test@example.com',
+				password: 'password123',
+			});
+			expect(mockToast).toHaveBeenCalledWith({
+				title: 'Success',
+				description: 'You have been signed in successfully.',
+			});
+		});
+	});
+
+	it('handles sign-in error', async () => {
+		const mockError = new Error('Invalid credentials');
+		mockSignIn.mockResolvedValueOnce({ error: mockError });
+
+		render(<SignInForm />);
+
+		const emailInput = screen.getByLabelText(/email/i);
+		const passwordInput = screen.getByLabelText(/password/i);
+		const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+		await userEvent.type(emailInput, 'test@example.com');
+		await userEvent.type(passwordInput, 'wrongpassword');
+		await userEvent.click(submitButton);
+
+		await waitFor(() => {
+			expect(mockToast).toHaveBeenCalledWith({
+				title: 'Error',
+				description: 'Invalid credentials',
+				variant: 'destructive',
+			});
+		});
+	});
+
+	it('disables submit button while loading', async () => {
+		(useAuth as jest.Mock).mockReturnValue({
+			signIn: mockSignIn,
+			loading: true,
 		});
 
-		expect(getByText(/you have been signed in successfully/i)).toBeInTheDocument();
+		render(<SignInForm />);
+
+		const submitButton = screen.getByRole('button', { name: /sign in/i });
+		expect(submitButton).toBeDisabled();
 	});
 
-	it('handles sign in error', async () => {
-		mockSupabaseClient.auth.signInWithPassword.mockResolvedValueOnce(
-			createMockError('Invalid email or password')
-		);
+	it('shows loading state in button text', async () => {
+		(useAuth as jest.Mock).mockReturnValue({
+			signIn: mockSignIn,
+			loading: true,
+		});
 
-		const { getByRole, getByLabelText, getByText, user } = render(<SignInForm />);
+		render(<SignInForm />);
 
-		await user.type(getByLabelText(/email/i), 'test@example.com');
-		await user.type(getByLabelText(/password/i), 'wrongpassword');
-		await user.click(getByRole('button', { name: /sign in/i }));
-
-		// Wait for the API call
-		await new Promise((resolve) => setTimeout(resolve, 0));
-
-		expect(getByText(/invalid email or password/i)).toBeInTheDocument();
-	});
-
-	it('validates form fields', async () => {
-		const { getByRole, findByText, user } = render(<SignInForm />);
-
-		await user.click(getByRole('button', { name: /sign in/i }));
-
-		expect(await findByText(/invalid email address/i)).toBeInTheDocument();
-		expect(await findByText(/password must be at least 6 characters/i)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /signing in/i })).toBeInTheDocument();
 	});
 });
