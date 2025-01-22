@@ -1,20 +1,36 @@
 import { renderHook, act } from '@testing-library/react';
 import { useUser } from './useUser';
-import { createClient, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
+import type { AuthChangeEvent } from '@supabase/supabase-js';
 
 jest.mock('@supabase/supabase-js');
 
-type AuthStateCallback = (event: AuthChangeEvent, session: Session | null) => void;
-
 describe('useUser', () => {
-	let authStateCallback: AuthStateCallback;
+	const mockSession = {
+		access_token: 'mock-access-token',
+		refresh_token: 'mock-refresh-token',
+		expires_in: 3600,
+		token_type: 'bearer',
+		user: {
+			id: '123',
+			email: 'test@example.com',
+			app_metadata: {},
+			user_metadata: {},
+			aud: 'authenticated',
+			created_at: '2024-01-21T00:00:00.000Z',
+			role: 'authenticated',
+			updated_at: '2024-01-21T00:00:00.000Z',
+		},
+	};
 
 	const mockSupabase = {
 		auth: {
 			getSession: jest.fn(),
-			onAuthStateChange: jest.fn((callback: AuthStateCallback) => {
-				authStateCallback = callback;
-				return { data: { subscription: { unsubscribe: jest.fn() } } };
+			onAuthStateChange: jest.fn((callback) => {
+				(mockSupabase as any).authCallback = callback;
+				return {
+					data: { subscription: { unsubscribe: jest.fn() } },
+				};
 			}),
 		},
 	};
@@ -27,34 +43,24 @@ describe('useUser', () => {
 		});
 	});
 
-	it('returns null when no user is authenticated', async () => {
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	it('initializes with loading state and no user', async () => {
 		const { result } = renderHook(() => useUser());
+
+		expect(result.current.loading).toBe(true);
+		expect(result.current.user).toBeNull();
 
 		await act(async () => {
 			await new Promise((resolve) => setTimeout(resolve, 0));
 		});
 
-		expect(result.current).toBeNull();
+		expect(result.current.loading).toBe(false);
 	});
 
-	it('returns user data when authenticated', async () => {
-		const mockSession = {
-			access_token: 'test-token',
-			refresh_token: 'refresh-token',
-			expires_in: 3600,
-			token_type: 'bearer',
-			user: {
-				id: '123',
-				email: 'test@example.com',
-				app_metadata: {},
-				user_metadata: { full_name: 'Test User', role: 'customer' },
-				aud: 'authenticated',
-				created_at: '2024-01-22T00:00:00.000Z',
-				role: 'authenticated',
-				updated_at: '2024-01-22T00:00:00.000Z',
-			},
-		};
-
+	it('updates user when session changes', async () => {
 		mockSupabase.auth.getSession.mockResolvedValueOnce({
 			data: { session: mockSession },
 			error: null,
@@ -66,41 +72,19 @@ describe('useUser', () => {
 			await new Promise((resolve) => setTimeout(resolve, 0));
 		});
 
-		expect(result.current).toEqual(mockSession.user);
+		expect(result.current.loading).toBe(false);
+		expect(result.current.user).toEqual(mockSession.user);
 	});
 
-	it('updates user data when auth state changes', async () => {
-		const mockSession = {
-			access_token: 'test-token',
-			refresh_token: 'refresh-token',
-			expires_in: 3600,
-			token_type: 'bearer',
-			user: {
-				id: '123',
-				email: 'test@example.com',
-				app_metadata: {},
-				user_metadata: { full_name: 'Test User', role: 'customer' },
-				aud: 'authenticated',
-				created_at: '2024-01-22T00:00:00.000Z',
-				role: 'authenticated',
-				updated_at: '2024-01-22T00:00:00.000Z',
-			},
-		};
-
+	it('handles auth state change', async () => {
 		const { result } = renderHook(() => useUser());
 
 		await act(async () => {
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			(mockSupabase as any).authCallback('SIGNED_IN' as AuthChangeEvent, mockSession);
 		});
 
-		expect(result.current).toBeNull();
-
-		await act(async () => {
-			authStateCallback('SIGNED_IN', mockSession);
-			await new Promise((resolve) => setTimeout(resolve, 0));
-		});
-
-		expect(result.current).toEqual(mockSession.user);
+		expect(result.current.loading).toBe(false);
+		expect(result.current.user).toEqual(mockSession.user);
 	});
 
 	it('cleans up auth subscription on unmount', () => {

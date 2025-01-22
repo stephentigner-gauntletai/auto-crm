@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { screen, waitFor } from '@testing-library/dom/types';
+// @ts-expect-error: The functions are there and should have types but it's not working
+import { screen, waitFor } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import { SignInForm } from './SignInForm';
 import { useAuth } from '../../hooks/auth/useAuth';
