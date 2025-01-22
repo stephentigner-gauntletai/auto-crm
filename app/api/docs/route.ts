@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getApiDocs } from '../../../src/lib/swagger';
+import { getApiDocs } from '../../../lib/swagger';
 
 export async function GET() {
 	const spec = getApiDocs();

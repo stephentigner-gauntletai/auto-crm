@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import type { User, AuthError } from '@supabase/supabase-js';
-import type { Database } from '../../src/types/supabase';
+import type { Database } from '../../types/supabase';
 
 interface AuthState {
 	user: User | null;
