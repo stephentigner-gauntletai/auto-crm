@@ -1,77 +1,116 @@
 import React from 'react';
-import { render } from '../../test/test-utils';
+import { render } from '@testing-library/react';
+// @ts-expect-error: The functions are there and should have types but it's not working
+import { screen, waitFor } from '@testing-library/dom';
+import userEvent from '@testing-library/user-event';
 import { ResetPasswordForm } from './ResetPasswordForm';
-import {
-	mockSupabaseClient,
-	createMockResponse,
-	createMockError,
-	setupMocks,
-	mockRouter,
-} from '../../test/test-utils';
+import { useAuth } from '../../hooks/auth/useAuth';
+import { useToast } from '../../components/ui/use-toast';
+import '@testing-library/jest-dom';
+
+// Mock the auth hook
+jest.mock('../../hooks/auth/useAuth', () => ({
+	useAuth: jest.fn(),
+}));
+
+// Mock the toast hook
+jest.mock('../../components/ui/use-toast', () => ({
+	useToast: jest.fn(() => ({
+		toast: jest.fn(),
+	})),
+}));
 
 describe('ResetPasswordForm', () => {
+	const mockResetPassword = jest.fn();
+	const mockToast = jest.fn();
+	const originalLocation = window.location;
+
 	beforeEach(() => {
-		setupMocks();
+		(useAuth as jest.Mock).mockReturnValue({
+			resetPassword: mockResetPassword,
+		});
+		(useToast as jest.Mock).mockReturnValue({
+			toast: mockToast,
+		});
+		// Mock window.location
+		delete (window as any).location;
+		window.location = { ...originalLocation, href: '' };
+	});
+
+	afterEach(() => {
+		jest.clearAllMocks();
+		window.location = originalLocation;
 	});
 
 	it('renders the reset password form', () => {
-		const { getByRole, getByLabelText } = render(<ResetPasswordForm />);
+		render(<ResetPasswordForm />);
 
-		expect(getByRole('heading', { name: /reset password/i })).toBeInTheDocument();
-		expect(getByLabelText(/email/i)).toBeInTheDocument();
-		expect(getByRole('button', { name: /send instructions/i })).toBeInTheDocument();
-		expect(getByRole('button', { name: /back to sign in/i })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /reset password/i })).toBeInTheDocument();
+		expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /send instructions/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /back to sign in/i })).toBeInTheDocument();
 	});
 
 	it('handles successful password reset request', async () => {
-		mockSupabaseClient.auth.resetPasswordForEmail.mockResolvedValueOnce(
-			createMockResponse({ data: true })
-		);
+		mockResetPassword.mockResolvedValueOnce({ error: null });
 
-		const { getByRole, getByLabelText, getByText, user } = render(<ResetPasswordForm />);
+		render(<ResetPasswordForm />);
 
-		await user.type(getByLabelText(/email/i), 'test@example.com');
-		await user.click(getByRole('button', { name: /send instructions/i }));
+		const emailInput = screen.getByLabelText(/email/i);
+		const submitButton = screen.getByRole('button', { name: /send instructions/i });
 
-		// Wait for the API call
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		await userEvent.type(emailInput, 'test@example.com');
+		await userEvent.click(submitButton);
 
-		expect(mockSupabaseClient.auth.resetPasswordForEmail).toHaveBeenCalledWith(
-			'test@example.com'
-		);
-
-		expect(getByText(/check your email for password reset instructions/i)).toBeInTheDocument();
+		await waitFor(() => {
+			expect(mockResetPassword).toHaveBeenCalledWith('test@example.com');
+			expect(mockToast).toHaveBeenCalledWith({
+				title: 'Success',
+				description: 'Check your email for password reset instructions.',
+			});
+		});
 	});
 
 	it('handles reset password error', async () => {
-		mockSupabaseClient.auth.resetPasswordForEmail.mockResolvedValueOnce(
-			createMockError('Email not found')
-		);
+		const mockError = new Error('Email not found');
+		mockResetPassword.mockResolvedValueOnce({ error: mockError });
 
-		const { getByRole, getByLabelText, getByText, user } = render(<ResetPasswordForm />);
+		render(<ResetPasswordForm />);
 
-		await user.type(getByLabelText(/email/i), 'nonexistent@example.com');
-		await user.click(getByRole('button', { name: /send instructions/i }));
+		const emailInput = screen.getByLabelText(/email/i);
+		const submitButton = screen.getByRole('button', { name: /send instructions/i });
 
-		// Wait for the API call
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		await userEvent.type(emailInput, 'nonexistent@example.com');
+		await userEvent.click(submitButton);
 
-		expect(getByText(/email not found/i)).toBeInTheDocument();
+		await waitFor(() => {
+			expect(mockToast).toHaveBeenCalledWith({
+				title: 'Error',
+				description: expect.any(Object),
+			});
+		});
 	});
 
 	it('validates email field', async () => {
-		const { getByRole, findByText, user } = render(<ResetPasswordForm />);
+		render(<ResetPasswordForm />);
 
-		await user.click(getByRole('button', { name: /send instructions/i }));
+		const submitButton = screen.getByRole('button', { name: /send instructions/i });
+		await userEvent.click(submitButton);
 
-		expect(await findByText(/invalid email address/i)).toBeInTheDocument();
+		await waitFor(() => {
+			const emailError = screen.getByText('Invalid email address', {
+				selector: 'p.text-sm.text-destructive',
+			});
+			expect(emailError).toBeInTheDocument();
+		});
 	});
 
 	it('navigates back to sign in page', async () => {
-		const { getByRole, user } = render(<ResetPasswordForm />);
+		render(<ResetPasswordForm />);
 
-		await user.click(getByRole('button', { name: /back to sign in/i }));
+		const backButton = screen.getByRole('button', { name: /back to sign in/i });
+		await userEvent.click(backButton);
 
-		expect(mockRouter.push).toHaveBeenCalledWith('/auth/sign-in');
+		expect(window.location.href).toBe('/auth/sign-in');
 	});
 });

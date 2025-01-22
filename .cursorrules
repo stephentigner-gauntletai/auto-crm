@@ -1,0 +1,4 @@
+When generating new files and changes to existing files, please abide by my .prettierrc file.
+Especially the indentation rules. Files should be indented with tabs, not space.
+The tabs are set to 4 spaces.
+
