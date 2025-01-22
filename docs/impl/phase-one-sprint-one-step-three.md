@@ -107,7 +107,7 @@
 
 ## Type System
 
-- [ ] Create base types:
+- [x] Create base types:
 
     ```typescript
     // types/api.ts
@@ -128,16 +128,16 @@
     }
     ```
 
-- [ ] Define request/response types:
-    - [ ] Authentication types
-    - [ ] Ticket types
-    - [ ] User types
-    - [ ] Team types
-- [ ] Set up type generation:
-    - [ ] Database types
-    - [ ] API types
-    - [ ] Validation types
-- [ ] Implement type utilities:
-    - [ ] Type guards
-    - [ ] Type transformers
-    - [ ] Generic helpers
+- [x] Define request/response types:
+    - [x] Authentication types
+    - [x] Ticket types
+    - [x] User types
+    - [x] Team types
+- [x] Set up type generation:
+    - [x] Database types
+    - [x] API types
+    - [x] Validation types
+- [x] Implement type utilities:
+    - [x] Type guards
+    - [x] Type transformers
+    - [x] Generic helpers
