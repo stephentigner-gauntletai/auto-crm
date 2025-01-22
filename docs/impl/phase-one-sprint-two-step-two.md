@@ -2,7 +2,7 @@
 
 ## Workflow Engine
 
-- [ ] Create workflow system:
+- [x] Create workflow system:
 
     ```typescript
     // lib/workflows/engine.ts
@@ -31,7 +31,7 @@
     }
     ```
 
-- [ ] Implement workflow storage:
+- [x] Implement workflow storage:
     ```sql
     create table workflows (
       id uuid primary key default uuid_generate_v4(),
@@ -43,11 +43,11 @@
       updated_at timestamptz default now()
     );
     ```
-- [ ] Add workflow validation:
-    - [ ] Step validation
-    - [ ] Cycle detection
-    - [ ] Permission checks
-    - [ ] Resource limits
+- [x] Add workflow validation:
+    - [x] Step validation
+    - [x] Cycle detection
+    - [x] Permission checks
+    - [x] Resource limits
 
 ## Workflow Builder Interface
 
