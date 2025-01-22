@@ -257,6 +257,55 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			attachments: {
+				Row: {
+					id: string;
+					ticket_id: string | null;
+					user_id: string | null;
+					file_name: string;
+					file_size: number;
+					content_type: string;
+					storage_path: string;
+					created_at: string | null;
+					updated_at: string | null;
+				};
+				Insert: {
+					id?: string;
+					ticket_id?: string | null;
+					user_id?: string | null;
+					file_name: string;
+					file_size: number;
+					content_type: string;
+					storage_path: string;
+					created_at?: string | null;
+					updated_at?: string | null;
+				};
+				Update: {
+					id?: string;
+					ticket_id?: string | null;
+					user_id?: string | null;
+					file_name?: string;
+					file_size?: number;
+					content_type?: string;
+					storage_path?: string;
+					created_at?: string | null;
+					updated_at?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'attachments_ticket_id_fkey';
+						columns: ['ticket_id'];
+						referencedRelation: 'tickets';
+						referencedColumns: ['id'];
+					},
+					{
+						foreignKeyName: 'attachments_user_id_fkey';
+						columns: ['user_id'];
+						referencedRelation: 'users';
+						referencedColumns: ['id'];
+					},
+				];
+			};
 		};
 		Views: {
 			[_ in never]: never;

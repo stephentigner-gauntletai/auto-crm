@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/supabase';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface Message {
 	id: string;
@@ -13,19 +12,11 @@ interface Message {
 	};
 }
 
-// Create a single supabase client for interacting with your database
-const createClient = () => {
-	return createSupabaseClient<Database>(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-	);
-};
-
 export function useMessages(ticketId: string) {
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const supabase = createClient();
+	const supabase = useMemo(() => createClient(), []);
 
 	const fetchMessages = useCallback(async () => {
 		try {

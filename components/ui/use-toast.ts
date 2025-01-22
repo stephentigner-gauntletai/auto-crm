@@ -1,24 +1,25 @@
 // Inspired by react-hot-toast library
 import * as React from 'react';
 
+import type { ToastActionElement, ToastProps } from '@/components/ui/toast';
+
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
-
-type ToastProps = {
-	id?: string;
-	title?: React.ReactNode;
-	description?: React.ReactNode;
-	action?: React.ReactElement;
-	open?: boolean;
-	onOpenChange?: (open: boolean) => void;
-};
 
 type ToasterToast = ToastProps & {
 	id: string;
 	title?: React.ReactNode;
 	description?: React.ReactNode;
-	action?: React.ReactElement;
+	action?: ToastActionElement;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const actionTypes = {
+	ADD_TOAST: 'ADD_TOAST',
+	UPDATE_TOAST: 'UPDATE_TOAST',
+	DISMISS_TOAST: 'DISMISS_TOAST',
+	REMOVE_TOAST: 'REMOVE_TOAST',
+} as const;
 
 let count = 0;
 
@@ -27,21 +28,23 @@ function genId() {
 	return count.toString();
 }
 
+type ActionType = typeof actionTypes;
+
 type Action =
 	| {
-			type: 'ADD_TOAST';
+			type: ActionType['ADD_TOAST'];
 			toast: ToasterToast;
 	  }
 	| {
-			type: 'UPDATE_TOAST';
+			type: ActionType['UPDATE_TOAST'];
 			toast: Partial<ToasterToast>;
 	  }
 	| {
-			type: 'DISMISS_TOAST';
+			type: ActionType['DISMISS_TOAST'];
 			toastId?: ToasterToast['id'];
 	  }
 	| {
-			type: 'REMOVE_TOAST';
+			type: ActionType['REMOVE_TOAST'];
 			toastId?: ToasterToast['id'];
 	  };
 
@@ -185,3 +188,4 @@ function useToast() {
 }
 
 export { useToast, toast };
+export type { ToasterToast };

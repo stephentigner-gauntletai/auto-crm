@@ -91,20 +91,20 @@
 
 ## File Attachments
 
-- [ ] Set up Supabase Storage:
-    - [ ] Configure buckets
-    - [ ] Set up policies
-    - [ ] Configure CORS
-- [ ] Implement file upload:
-    - [ ] Upload component
-    - [ ] Progress tracking
-    - [ ] Error handling
-    - [ ] File validation
-- [ ] Create file management:
-    - [ ] File listing
-    - [ ] File preview
-    - [ ] File deletion
-    - [ ] Storage cleanup
+- [x] Set up Supabase Storage:
+    - [x] Configure buckets
+    - [x] Set up policies
+    - [x] Configure CORS
+- [x] Implement file upload:
+    - [x] Upload component
+    - [x] Progress tracking
+    - [x] Error handling
+    - [x] File validation
+- [x] Create file management:
+    - [x] File listing
+    - [x] File preview
+    - [x] File deletion
+    - [x] Storage cleanup
 
 ## Real-time Updates
 
