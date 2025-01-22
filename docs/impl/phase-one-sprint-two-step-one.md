@@ -2,7 +2,7 @@
 
 ## CRUD Operations
 
-- [ ] Implement ticket creation:
+- [x] Implement ticket creation:
     ```typescript
     // app/api/tickets/route.ts
     export async function POST(req: Request) {
@@ -22,24 +22,24 @@
     		.single();
     }
     ```
-- [ ] Implement ticket retrieval:
-    - [ ] Get single ticket
-    - [ ] List tickets
-    - [ ] Filter tickets
-    - [ ] Sort tickets
-- [ ] Implement ticket updates:
-    - [ ] Status updates
-    - [ ] Priority updates
-    - [ ] Assignment changes
-    - [ ] Content updates
-- [ ] Implement ticket deletion:
-    - [ ] Soft delete
-    - [ ] Archive functionality
-    - [ ] Deletion policies
+- [x] Implement ticket retrieval:
+    - [x] Get single ticket
+    - [x] List tickets
+    - [x] Filter tickets
+    - [x] Sort tickets
+- [x] Implement ticket updates:
+    - [x] Status updates
+    - [x] Priority updates
+    - [x] Assignment changes
+    - [x] Content updates
+- [x] Implement ticket deletion:
+    - [x] Soft delete
+    - [x] Archive functionality
+    - [x] Deletion policies
 
 ## Metadata Management
 
-- [ ] Create metadata tables:
+- [x] Create metadata tables:
     ```sql
     create table ticket_metadata (
       id uuid primary key default uuid_generate_v4(),
@@ -49,20 +49,20 @@
       created_at timestamptz default now()
     );
     ```
-- [ ] Implement metadata operations:
-    - [ ] Add metadata
-    - [ ] Update metadata
-    - [ ] Delete metadata
-    - [ ] Query by metadata
-- [ ] Set up metadata types:
-    - [ ] Status transitions
-    - [ ] Priority levels
-    - [ ] Custom fields
-    - [ ] Tags
+- [x] Implement metadata operations:
+    - [x] Add metadata
+    - [x] Update metadata
+    - [x] Delete metadata
+    - [x] Query by metadata
+- [x] Set up metadata types:
+    - [x] Status transitions
+    - [x] Priority levels
+    - [x] Custom fields
+    - [x] Tags
 
 ## Conversation System
 
-- [ ] Create conversation components:
+- [x] Create conversation components:
     ```typescript
     // app/components/tickets/Conversation.tsx
     export function TicketConversation({ ticketId }: { ticketId: string }) {
@@ -83,11 +83,11 @@
       )
     }
     ```
-- [ ] Implement message handling:
-    - [ ] Message creation
-    - [ ] Message threading
-    - [ ] Message formatting
-    - [ ] Message validation
+- [x] Implement message handling:
+    - [x] Message creation
+    - [x] Message threading
+    - [x] Message formatting
+    - [x] Message validation
 
 ## File Attachments
 
