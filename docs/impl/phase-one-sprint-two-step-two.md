@@ -125,7 +125,7 @@
     - [x] Team notifications
     - [x] External webhooks
 - [ ] Create custom actions:
-    - [ ] Action framework
+    - [x] Action framework
     - [ ] Custom scripts
     - [ ] API integrations
     - [ ] Action templates
