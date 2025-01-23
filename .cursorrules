@@ -2,6 +2,6 @@ When generating new files and changes to existing files, please abide by my .pre
 Especially the indentation rules. Files should be indented with tabs, not space.
 The tabs are set to 4 spaces.
 
-When creating new migrations, use the `npx supabase migration new` command to create a new migration file, then put the SQL in the file.
+When working with supabase, please look at the docs in the docs/supabase-prompts folder.
 
 When working with a checklist of tasks, if you think there are things that need to be added to the checklist, please ask first. If there are things you think should be removed from the checklist, please ask first. Otherwise please only check items as they are completed.

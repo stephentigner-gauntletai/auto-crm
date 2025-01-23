@@ -20,6 +20,14 @@ import type {
 	NotificationStep,
 } from '@/lib/workflows/types';
 import { ValidationError } from '@/components/ui/validation-error';
+import { FieldSuggestions } from '@/components/ui/field-suggestions';
+import {
+	getFieldSuggestions,
+	getOperatorSuggestions,
+	getValueSuggestions,
+} from '@/lib/workflows/suggestions';
+import type { FieldSuggestion } from '@/lib/workflows/suggestions';
+import { useWorkflow } from '@/lib/contexts/workflow';
 
 interface StepEditorProps {
 	steps: WorkflowStep[];
@@ -359,14 +367,29 @@ function ConditionConfig({
 	stepId,
 	validationErrors = [],
 }: ConditionConfigProps) {
+	const [selectedField, setSelectedField] = useState<FieldSuggestion | null>(null);
+	const { triggerType } = useWorkflow();
+
+	const fieldSuggestions = getFieldSuggestions(triggerType, '');
+	const operatorSuggestions = selectedField ? getOperatorSuggestions(selectedField.type) : [];
+	const valueSuggestions = selectedField
+		? getValueSuggestions(selectedField, config.operator)
+		: [];
+
+	const handleFieldChange = (path: string) => {
+		const field = fieldSuggestions.find((f) => f.path === path);
+		setSelectedField(field || null);
+		onChange({ ...config, field: path });
+	};
+
 	return (
 		<div className="space-y-4">
 			<div>
 				<Label>Field</Label>
-				<Input
+				<FieldSuggestions
+					suggestions={fieldSuggestions}
 					value={config.field}
-					onChange={(e) => onChange({ ...config, field: e.target.value })}
-					placeholder="ticket.status"
+					onChange={handleFieldChange}
 					className={
 						validationErrors.some((e) => e.field === `${stepId}.field`)
 							? 'border-destructive'
@@ -401,11 +424,11 @@ function ConditionConfig({
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="equals">Equals</SelectItem>
-						<SelectItem value="not_equals">Not Equals</SelectItem>
-						<SelectItem value="contains">Contains</SelectItem>
-						<SelectItem value="greater_than">Greater Than</SelectItem>
-						<SelectItem value="less_than">Less Than</SelectItem>
+						{operatorSuggestions.map((operator) => (
+							<SelectItem key={operator} value={operator}>
+								{operator.replace(/_/g, ' ')}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 				{validationErrors
@@ -417,16 +440,40 @@ function ConditionConfig({
 
 			<div>
 				<Label>Value</Label>
-				<Input
-					value={config.value}
-					onChange={(e) => onChange({ ...config, value: e.target.value })}
-					placeholder="Value to compare"
-					className={
-						validationErrors.some((e) => e.field === `${stepId}.value`)
-							? 'border-destructive'
-							: ''
-					}
-				/>
+				{valueSuggestions.length > 0 ? (
+					<Select
+						value={config.value}
+						onValueChange={(value) => onChange({ ...config, value })}
+					>
+						<SelectTrigger
+							className={
+								validationErrors.some((e) => e.field === `${stepId}.value`)
+									? 'border-destructive'
+									: ''
+							}
+						>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{valueSuggestions.map((value) => (
+								<SelectItem key={value} value={value}>
+									{value}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				) : (
+					<Input
+						value={config.value}
+						onChange={(e) => onChange({ ...config, value: e.target.value })}
+						placeholder={selectedField?.example || 'Value to compare'}
+						className={
+							validationErrors.some((e) => e.field === `${stepId}.value`)
+								? 'border-destructive'
+								: ''
+						}
+					/>
+				)}
 				{validationErrors
 					.filter((e) => e.field === `${stepId}.value`)
 					.map((error, index) => (
@@ -448,6 +495,18 @@ interface ActionConfigProps {
 }
 
 function ActionConfig({ config, onChange, stepId, validationErrors = [] }: ActionConfigProps) {
+	const [selectedField, setSelectedField] = useState<FieldSuggestion | null>(null);
+	const { triggerType } = useWorkflow();
+
+	const fieldSuggestions = getFieldSuggestions(triggerType, '');
+	const valueSuggestions = selectedField ? getValueSuggestions(selectedField, 'equals') : [];
+
+	const handleFieldChange = (path: string) => {
+		const field = fieldSuggestions.find((f) => f.path === path);
+		setSelectedField(field || null);
+		onChange({ ...config, field: path });
+	};
+
 	return (
 		<div className="space-y-4">
 			<div>
@@ -484,10 +543,10 @@ function ActionConfig({ config, onChange, stepId, validationErrors = [] }: Actio
 				<>
 					<div>
 						<Label>Field</Label>
-						<Input
+						<FieldSuggestions
+							suggestions={fieldSuggestions}
 							value={config.field ?? ''}
-							onChange={(e) => onChange({ ...config, field: e.target.value })}
-							placeholder="Field to update"
+							onChange={handleFieldChange}
 							className={
 								validationErrors.some((e) => e.field === `${stepId}.field`)
 									? 'border-destructive'
@@ -502,16 +561,40 @@ function ActionConfig({ config, onChange, stepId, validationErrors = [] }: Actio
 					</div>
 					<div>
 						<Label>Value</Label>
-						<Input
-							value={config.value ?? ''}
-							onChange={(e) => onChange({ ...config, value: e.target.value })}
-							placeholder="New value"
-							className={
-								validationErrors.some((e) => e.field === `${stepId}.value`)
-									? 'border-destructive'
-									: ''
-							}
-						/>
+						{valueSuggestions.length > 0 ? (
+							<Select
+								value={config.value ?? ''}
+								onValueChange={(value) => onChange({ ...config, value })}
+							>
+								<SelectTrigger
+									className={
+										validationErrors.some((e) => e.field === `${stepId}.value`)
+											? 'border-destructive'
+											: ''
+									}
+								>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{valueSuggestions.map((value) => (
+										<SelectItem key={value} value={value}>
+											{value}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						) : (
+							<Input
+								value={config.value ?? ''}
+								onChange={(e) => onChange({ ...config, value: e.target.value })}
+								placeholder={selectedField?.example || 'New value'}
+								className={
+									validationErrors.some((e) => e.field === `${stepId}.value`)
+										? 'border-destructive'
+										: ''
+								}
+							/>
+						)}
 						{validationErrors
 							.filter((e) => e.field === `${stepId}.value`)
 							.map((error, index) => (
@@ -609,6 +692,68 @@ function NotificationConfig({
 	stepId,
 	validationErrors = [],
 }: NotificationConfigProps) {
+	const [showVariables, setShowVariables] = useState(false);
+
+	const templateVariables = [
+		{ path: 'ticket.id', description: 'The ticket ID', example: '123' },
+		{ path: 'ticket.title', description: 'The ticket title', example: 'Need help with login' },
+		{
+			path: 'ticket.description',
+			description: 'The ticket description',
+			example: 'I cannot log into my account',
+		},
+		{ path: 'ticket.status', description: 'The ticket status', example: 'open' },
+		{ path: 'ticket.priority', description: 'The ticket priority', example: 'high' },
+		{
+			path: 'ticket.assignee',
+			description: 'The assigned agent',
+			example: 'john.doe@company.com',
+		},
+		{
+			path: 'ticket.customer',
+			description: 'The customer email',
+			example: 'customer@example.com',
+		},
+		{
+			path: 'ticket.created_at',
+			description: 'When the ticket was created',
+			example: '2024-03-20T10:00:00Z',
+		},
+		{
+			path: 'ticket.updated_at',
+			description: 'When the ticket was last updated',
+			example: '2024-03-20T10:30:00Z',
+		},
+		{
+			path: 'workflow.name',
+			description: 'The workflow name',
+			example: 'High Priority Escalation',
+		},
+		{
+			path: 'workflow.step',
+			description: 'The current step name',
+			example: 'Send notification',
+		},
+		{
+			path: 'workflow.trigger',
+			description: 'What triggered the workflow',
+			example: 'Ticket priority changed to high',
+		},
+	];
+
+	const insertVariable = (variable: string) => {
+		const cursorPosition =
+			(document.activeElement as HTMLTextAreaElement)?.selectionStart ||
+			config.template.length;
+		const newTemplate =
+			config.template.slice(0, cursorPosition) +
+			'${' +
+			variable +
+			'}' +
+			config.template.slice(cursorPosition);
+		onChange({ ...config, template: newTemplate });
+	};
+
 	return (
 		<div className="space-y-4">
 			<div>
@@ -642,11 +787,45 @@ function NotificationConfig({
 			</div>
 
 			<div>
-				<Label>Template</Label>
+				<div className="flex justify-between items-center mb-2">
+					<Label>Template</Label>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => setShowVariables(!showVariables)}
+					>
+						{showVariables ? 'Hide Variables' : 'Show Variables'}
+					</Button>
+				</div>
+				{showVariables && (
+					<div className="mb-2 p-4 border rounded-md bg-muted">
+						<div className="text-sm font-medium mb-2">Available Variables:</div>
+						<div className="grid grid-cols-2 gap-2">
+							{templateVariables.map((variable) => (
+								<Button
+									key={variable.path}
+									variant="ghost"
+									size="sm"
+									className="justify-start h-auto py-1 px-2"
+									onClick={() => insertVariable(variable.path)}
+								>
+									<div className="text-left">
+										<div className="font-mono text-xs">
+											${'{' + variable.path + '}'}
+										</div>
+										<div className="text-xs text-muted-foreground">
+											{variable.description}
+										</div>
+									</div>
+								</Button>
+							))}
+						</div>
+					</div>
+				)}
 				<Input
 					value={config.template}
 					onChange={(e) => onChange({ ...config, template: e.target.value })}
-					placeholder="Notification template"
+					placeholder="Use ${variable.path} for dynamic content"
 					className={
 						validationErrors.some((e) => e.field === `${stepId}.template`)
 							? 'border-destructive'
