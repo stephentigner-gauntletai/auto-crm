@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { ticketOperations } from './actions/ticket';
 import type {
 	WorkflowStep,
 	ConditionStep,
@@ -87,7 +87,6 @@ async function executeActionStep(
 	error?: string;
 	nextSteps: string[];
 }> {
-	const supabase = createClient();
 	const { action, field, value } = step.config;
 
 	try {
@@ -100,37 +99,46 @@ async function executeActionStep(
 				if (!field || !value) {
 					throw new Error('Field and value are required for update_ticket action');
 				}
-				await supabase
-					.from('tickets')
-					.update({ [field]: value })
-					.eq('id', context.ticketId);
+				await ticketOperations.updateField(context.ticketId, field, value);
+				await ticketOperations.createHistoryEntry(context.ticketId, {
+					action: 'workflow_update_ticket',
+					details: {
+						field,
+						new: value?.toString() || null,
+					},
+					userId: context.userId,
+				});
 				break;
 			case 'assign_ticket':
 				if (!value) {
 					throw new Error('User ID is required for assign_ticket action');
 				}
-				await supabase
-					.from('tickets')
-					.update({ assigned_to: value })
-					.eq('id', context.ticketId);
+				await ticketOperations.updateField(context.ticketId, 'assigned_to', value);
+				await ticketOperations.createHistoryEntry(context.ticketId, {
+					action: 'workflow_assign',
+					details: {
+						field: 'assigned_to',
+						new: value,
+					},
+					userId: context.userId,
+				});
 				break;
 			case 'close_ticket':
-				await supabase
-					.from('tickets')
-					.update({ status: 'closed' })
-					.eq('id', context.ticketId);
+				await ticketOperations.updateField(context.ticketId, 'status', 'closed');
+				await ticketOperations.createHistoryEntry(context.ticketId, {
+					action: 'workflow_close',
+					details: {
+						field: 'status',
+						new: 'closed',
+					},
+					userId: context.userId,
+				});
 				break;
 			default: {
 				const exhaustiveCheck: never = action;
 				throw new Error(`Unknown action: ${exhaustiveCheck}`);
 			}
 		}
-
-		await createHistoryEntry(context.ticketId, {
-			action: `workflow_${action}`,
-			details: { field, value },
-			userId: context.userId,
-		});
 
 		return {
 			success: true,
@@ -235,23 +243,6 @@ function getFieldValue(data: Record<string, any>, field: string): any {
 	}
 
 	return value;
-}
-
-async function createHistoryEntry(
-	ticketId: string,
-	entry: {
-		action: string;
-		details: Record<string, unknown>;
-		userId: string;
-	}
-) {
-	const supabase = createClient();
-	await supabase.from('ticket_history').insert({
-		ticket_id: ticketId,
-		action: entry.action,
-		details: JSON.parse(JSON.stringify(entry.details)),
-		user_id: entry.userId,
-	});
 }
 
 async function sendEmail(recipients: string[], template: string, context: WorkflowContext) {

@@ -17,6 +17,10 @@
   - [x] Cycle detection
   - [x] Permission checks
   - [x] Resource limits
+  - [x] Visual validation
+  - [x] Error highlighting
+  - [x] Suggestions
+  - [x] Testing tools
 
 ### Workflow Builder Interface
 - [x] Create base components
@@ -92,12 +96,12 @@
 - [ ] Add workflow validation:
     - [x] Visual validation
     - [x] Error highlighting
-    - [ ] Suggestions
+    - [x] Suggestions
     - [x] Testing tools
 
 ## Automation Actions
 
-- [ ] Implement ticket actions:
+- [x] Implement ticket actions:
     ```typescript
     // lib/workflows/actions/ticket.ts
     export const ticketActions = {
@@ -115,11 +119,11 @@
     	},
     };
     ```
-- [ ] Add notification actions:
-    - [ ] Email notifications
-    - [ ] In-app notifications
-    - [ ] Team notifications
-    - [ ] External webhooks
+- [x] Add notification actions:
+    - [x] Email notifications
+    - [x] In-app notifications
+    - [x] Team notifications
+    - [x] External webhooks
 - [ ] Create custom actions:
     - [ ] Action framework
     - [ ] Custom scripts
