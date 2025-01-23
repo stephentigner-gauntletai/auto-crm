@@ -126,7 +126,7 @@
     - [x] External webhooks
 - [ ] Create custom actions:
     - [x] Action framework
-    - [ ] Custom scripts
+    - [x] Custom scripts
     - [ ] API integrations
     - [ ] Action templates
 
