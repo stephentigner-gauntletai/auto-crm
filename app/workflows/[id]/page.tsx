@@ -11,6 +11,7 @@ import { WorkflowSettings } from '@/components/workflows/WorkflowSettings';
 import { TriggerConfig } from '@/components/workflows/TriggerConfig';
 import { StepEditor } from '@/components/workflows/StepEditor';
 import { FlowDiagram } from '@/components/workflows/FlowDiagram';
+import { WorkflowTester } from '@/components/workflows/WorkflowTester';
 import type { WorkflowStep, WorkflowTrigger } from '@/lib/workflows/types';
 
 interface EditWorkflowPageProps {
@@ -180,6 +181,7 @@ export default function EditWorkflowPage({ params }: EditWorkflowPageProps) {
 								<TabsTrigger value="settings">Settings</TabsTrigger>
 								<TabsTrigger value="trigger">Trigger</TabsTrigger>
 								<TabsTrigger value="steps">Steps</TabsTrigger>
+								<TabsTrigger value="test">Test</TabsTrigger>
 							</TabsList>
 
 							<TabsContent value="settings">
@@ -201,6 +203,21 @@ export default function EditWorkflowPage({ params }: EditWorkflowPageProps) {
 
 							<TabsContent value="steps">
 								<StepEditor steps={steps} onChange={setSteps} />
+							</TabsContent>
+
+							<TabsContent value="test">
+								<WorkflowTester
+									workflow={{
+										id: params.id,
+										name,
+										description,
+										trigger,
+										steps,
+										isActive,
+										createdAt: '', // These fields aren't needed for testing
+										updatedAt: '',
+									}}
+								/>
 							</TabsContent>
 						</Tabs>
 					</CardContent>

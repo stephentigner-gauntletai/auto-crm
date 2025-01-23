@@ -93,7 +93,7 @@
     - [x] Visual validation
     - [x] Error highlighting
     - [ ] Suggestions
-    - [ ] Testing tools
+    - [x] Testing tools
 
 ## Automation Actions
 

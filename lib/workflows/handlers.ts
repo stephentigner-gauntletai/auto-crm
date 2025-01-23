@@ -17,18 +17,16 @@ export async function executeStep(
 	nextSteps: string[];
 }> {
 	try {
-		// We assign the step type to a variable here to allow
-		// the exhaustive check to work.
 		const stepType = step.type;
 		switch (stepType) {
 			case 'condition':
-				return await executeConditionStep(step, context);
+				return await executeConditionStep(step as ConditionStep, context);
 			case 'action':
-				return await executeActionStep(step, context);
+				return await executeActionStep(step as ActionStep, context);
 			case 'delay':
-				return await executeDelayStep(step, context);
+				return await executeDelayStep(step as DelayStep, context);
 			case 'notification':
-				return await executeNotificationStep(step, context);
+				return await executeNotificationStep(step as NotificationStep, context);
 			default: {
 				const exhaustiveCheck: never = stepType;
 				throw new Error(`Unknown step type: ${exhaustiveCheck}`);
@@ -52,7 +50,7 @@ async function executeConditionStep(
 	nextSteps: string[];
 }> {
 	const { field, operator, value } = step.config;
-	const fieldValue = getFieldValue(field, context);
+	const fieldValue = getFieldValue(context.data, field);
 
 	let result = false;
 	switch (operator) {
@@ -224,15 +222,16 @@ async function executeNotificationStep(
 	}
 }
 
-function getFieldValue(field: string, context: WorkflowContext): unknown {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getFieldValue(data: Record<string, any>, field: string): any {
 	const parts = field.split('.');
-	let value: Record<string, unknown> = context.data as Record<string, unknown>;
+	let value = data;
 
 	for (const part of parts) {
 		if (value === undefined || value === null) {
 			return undefined;
 		}
-		value = value[part] as Record<string, unknown>;
+		value = value[part];
 	}
 
 	return value;
@@ -276,4 +275,28 @@ async function createInAppNotification(
 async function sendWebhookNotification(url: string, template: string, context: WorkflowContext) {
 	// TODO: Implement webhook notifications
 	console.log('Sending webhook notification', { url, template, context });
+}
+
+export async function evaluateCondition(
+	config: ConditionStep['config'],
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	data: Record<string, any>
+): Promise<boolean> {
+	const { field, operator, value } = config;
+	const fieldValue = getFieldValue(data, field);
+
+	switch (operator) {
+		case 'equals':
+			return fieldValue === value;
+		case 'not_equals':
+			return fieldValue !== value;
+		case 'contains':
+			return String(fieldValue).includes(String(value));
+		case 'greater_than':
+			return Number(fieldValue) > Number(value);
+		case 'less_than':
+			return Number(fieldValue) < Number(value);
+		default:
+			return false;
+	}
 }

@@ -14,52 +14,46 @@ export interface WorkflowTrigger {
 	conditions: Record<string, unknown>;
 }
 
-export interface BaseWorkflowStep {
+interface BaseWorkflowStep {
 	id: string;
 	nextSteps: string[];
-}
-
-export interface ConditionConfig {
-	field: string;
-	operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
-	value: string;
-}
-
-export interface ActionConfig {
-	action: 'update_ticket' | 'assign_ticket' | 'close_ticket';
-	field?: string;
-	value?: string;
-}
-
-export interface DelayConfig {
-	duration: number;
-	unit: 'seconds' | 'minutes' | 'hours' | 'days';
-}
-
-export interface NotificationConfig {
-	type: 'email' | 'in_app' | 'webhook';
-	template: string;
-	recipients: string[];
+	isStart: boolean;
 }
 
 export interface ConditionStep extends BaseWorkflowStep {
 	type: 'condition';
-	config: ConditionConfig;
+	config: {
+		field: string;
+		operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+		value: string;
+	};
+	alternateSteps: string[];
 }
 
 export interface ActionStep extends BaseWorkflowStep {
 	type: 'action';
-	config: ActionConfig;
+	config: {
+		action: 'update_ticket' | 'assign_ticket' | 'close_ticket';
+		field?: string;
+		value?: string;
+	};
 }
 
 export interface DelayStep extends BaseWorkflowStep {
 	type: 'delay';
-	config: DelayConfig;
+	config: {
+		duration: number;
+		unit: 'seconds' | 'minutes' | 'hours' | 'days';
+	};
 }
 
 export interface NotificationStep extends BaseWorkflowStep {
 	type: 'notification';
-	config: NotificationConfig;
+	config: {
+		type: 'email' | 'in_app' | 'webhook';
+		template: string;
+		recipients: string[];
+	};
 }
 
 export type WorkflowStep = ConditionStep | ActionStep | DelayStep | NotificationStep;

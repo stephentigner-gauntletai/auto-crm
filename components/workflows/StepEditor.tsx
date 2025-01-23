@@ -13,11 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Plus, ArrowDown, X } from 'lucide-react';
 import type {
 	WorkflowStepType,
-	ConditionConfig,
-	ActionConfig,
-	DelayConfig,
-	NotificationConfig,
 	WorkflowStep,
+	ConditionStep,
+	ActionStep,
+	DelayStep,
+	NotificationStep,
 } from '@/lib/workflows/types';
 import { ValidationError } from '@/components/ui/validation-error';
 
@@ -37,41 +37,41 @@ const stepTypes = [
 	{ value: 'notification' as const, label: 'Notification' },
 ] as const;
 
-function getDefaultConfig(type: 'condition'): ConditionConfig;
-function getDefaultConfig(type: 'action'): ActionConfig;
-function getDefaultConfig(type: 'delay'): DelayConfig;
-function getDefaultConfig(type: 'notification'): NotificationConfig;
+function getDefaultConfig(type: 'condition'): ConditionStep['config'];
+function getDefaultConfig(type: 'action'): ActionStep['config'];
+function getDefaultConfig(type: 'delay'): DelayStep['config'];
+function getDefaultConfig(type: 'notification'): NotificationStep['config'];
 function getDefaultConfig(
 	type: WorkflowStepType
-): ConditionConfig | ActionConfig | DelayConfig | NotificationConfig {
+):
+	| ConditionStep['config']
+	| ActionStep['config']
+	| DelayStep['config']
+	| NotificationStep['config'] {
 	switch (type) {
 		case 'condition':
-			const conditionConfig: ConditionConfig = {
-				operator: 'equals',
+			return {
 				field: '',
+				operator: 'equals',
 				value: '',
 			};
-			return conditionConfig;
 		case 'action':
-			const actionConfig: ActionConfig = {
+			return {
 				action: 'update_ticket',
 				field: undefined,
 				value: undefined,
 			};
-			return actionConfig;
 		case 'delay':
-			const delayConfig: DelayConfig = {
+			return {
 				duration: 60,
 				unit: 'minutes',
 			};
-			return delayConfig;
 		case 'notification':
-			const notificationConfig: NotificationConfig = {
+			return {
 				type: 'email',
 				template: '',
 				recipients: [],
 			};
-			return notificationConfig;
 	}
 }
 
@@ -86,6 +86,7 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 		const baseStep = {
 			id: crypto.randomUUID(),
 			nextSteps: [] as string[],
+			isStart: steps.length === 0, // First step is a start step
 		};
 
 		let newStep: WorkflowStep;
@@ -96,7 +97,8 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 					...baseStep,
 					type: 'condition',
 					config,
-				};
+					alternateSteps: [],
+				} as ConditionStep;
 				break;
 			}
 			case 'action': {
@@ -105,7 +107,7 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 					...baseStep,
 					type: 'action',
 					config,
-				};
+				} as ActionStep;
 				break;
 			}
 			case 'delay': {
@@ -114,7 +116,7 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 					...baseStep,
 					type: 'delay',
 					config,
-				};
+				} as DelayStep;
 				break;
 			}
 			case 'notification': {
@@ -123,7 +125,7 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 					...baseStep,
 					type: 'notification',
 					config,
-				};
+				} as NotificationStep;
 				break;
 			}
 		}
@@ -135,17 +137,48 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 
 	const updateStep = (
 		stepId: string,
-		updates: Partial<Omit<WorkflowStep, 'type' | 'config'>> & {
-			config?: WorkflowStep['config'];
-		}
+		updates: Partial<{
+			nextSteps: string[];
+			isStart: boolean;
+			config:
+				| ConditionStep['config']
+				| ActionStep['config']
+				| DelayStep['config']
+				| NotificationStep['config'];
+		}>
 	) => {
 		const stepToUpdate = steps.find((step) => step.id === stepId);
 		if (!stepToUpdate) return;
 
 		onChange(
-			steps.map((step) =>
-				step.id === stepId ? ({ ...step, ...updates } as WorkflowStep) : step
-			)
+			steps.map((step) => {
+				if (step.id !== stepId) return step;
+
+				switch (step.type) {
+					case 'condition':
+						return {
+							...(step as ConditionStep),
+							...updates,
+						} as ConditionStep;
+					case 'action':
+						return {
+							...(step as ActionStep),
+							...updates,
+						} as ActionStep;
+					case 'delay':
+						return {
+							...(step as DelayStep),
+							...updates,
+						} as DelayStep;
+					case 'notification':
+						return {
+							...(step as NotificationStep),
+							...updates,
+						} as NotificationStep;
+					default:
+						return step;
+				}
+			})
 		);
 	};
 
@@ -252,7 +285,7 @@ export function StepEditor({ steps, onChange, validationErrors = [] }: StepEdito
 
 interface StepConfigProps {
 	step: WorkflowStep;
-	onChange: (updates: Partial<Omit<WorkflowStep, 'type'>>) => void;
+	onChange: (updates: Partial<WorkflowStep>) => void;
 	validationErrors?: {
 		field: string;
 		message: string;
@@ -261,50 +294,58 @@ interface StepConfigProps {
 
 function StepConfig({ step, onChange, validationErrors = [] }: StepConfigProps) {
 	switch (step.type) {
-		case 'condition':
+		case 'condition': {
+			const conditionStep = step as ConditionStep;
 			return (
 				<ConditionConfig
-					config={step.config}
+					config={conditionStep.config}
 					onChange={(config) => onChange({ config })}
 					stepId={step.id}
 					validationErrors={validationErrors}
 				/>
 			);
-		case 'action':
+		}
+		case 'action': {
+			const actionStep = step as ActionStep;
 			return (
 				<ActionConfig
-					config={step.config}
+					config={actionStep.config}
 					onChange={(config) => onChange({ config })}
 					stepId={step.id}
 					validationErrors={validationErrors}
 				/>
 			);
-		case 'delay':
+		}
+		case 'delay': {
+			const delayStep = step as DelayStep;
 			return (
 				<DelayConfig
-					config={step.config}
+					config={delayStep.config}
 					onChange={(config) => onChange({ config })}
 					stepId={step.id}
 					validationErrors={validationErrors}
 				/>
 			);
-		case 'notification':
+		}
+		case 'notification': {
+			const notificationStep = step as NotificationStep;
 			return (
 				<NotificationConfig
-					config={step.config}
+					config={notificationStep.config}
 					onChange={(config) => onChange({ config })}
 					stepId={step.id}
 					validationErrors={validationErrors}
 				/>
 			);
+		}
 		default:
 			return null;
 	}
 }
 
 interface ConditionConfigProps {
-	config: ConditionConfig;
-	onChange: (config: ConditionConfig) => void;
+	config: ConditionStep['config'];
+	onChange: (config: ConditionStep['config']) => void;
 	stepId: string;
 	validationErrors?: {
 		field: string;
@@ -344,7 +385,10 @@ function ConditionConfig({
 				<Select
 					value={config.operator}
 					onValueChange={(operator) =>
-						onChange({ ...config, operator: operator as ConditionConfig['operator'] })
+						onChange({
+							...config,
+							operator: operator as ConditionStep['config']['operator'],
+						})
 					}
 				>
 					<SelectTrigger
@@ -394,8 +438,8 @@ function ConditionConfig({
 }
 
 interface ActionConfigProps {
-	config: ActionConfig;
-	onChange: (config: ActionConfig) => void;
+	config: ActionStep['config'];
+	onChange: (config: ActionStep['config']) => void;
 	stepId: string;
 	validationErrors?: {
 		field: string;
@@ -411,7 +455,7 @@ function ActionConfig({ config, onChange, stepId, validationErrors = [] }: Actio
 				<Select
 					value={config.action}
 					onValueChange={(action) =>
-						onChange({ ...config, action: action as ActionConfig['action'] })
+						onChange({ ...config, action: action as ActionStep['config']['action'] })
 					}
 				>
 					<SelectTrigger
@@ -481,8 +525,8 @@ function ActionConfig({ config, onChange, stepId, validationErrors = [] }: Actio
 }
 
 interface DelayConfigProps {
-	config: DelayConfig;
-	onChange: (config: DelayConfig) => void;
+	config: DelayStep['config'];
+	onChange: (config: DelayStep['config']) => void;
 	stepId: string;
 	validationErrors?: {
 		field: string;
@@ -520,7 +564,7 @@ function DelayConfig({ config, onChange, stepId, validationErrors = [] }: DelayC
 				<Select
 					value={config.unit}
 					onValueChange={(unit) =>
-						onChange({ ...config, unit: unit as DelayConfig['unit'] })
+						onChange({ ...config, unit: unit as DelayStep['config']['unit'] })
 					}
 				>
 					<SelectTrigger
@@ -550,8 +594,8 @@ function DelayConfig({ config, onChange, stepId, validationErrors = [] }: DelayC
 }
 
 interface NotificationConfigProps {
-	config: NotificationConfig;
-	onChange: (config: NotificationConfig) => void;
+	config: NotificationStep['config'];
+	onChange: (config: NotificationStep['config']) => void;
 	stepId: string;
 	validationErrors?: {
 		field: string;
@@ -572,7 +616,7 @@ function NotificationConfig({
 				<Select
 					value={config.type}
 					onValueChange={(type) =>
-						onChange({ ...config, type: type as NotificationConfig['type'] })
+						onChange({ ...config, type: type as NotificationStep['config']['type'] })
 					}
 				>
 					<SelectTrigger
