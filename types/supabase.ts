@@ -1,5 +1,13 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export type JsonValue =
+	| string
+	| number
+	| boolean
+	| null
+	| JsonValue[]
+	| { [key: string]: JsonValue };
+
 export type Database = {
 	graphql_public: {
 		Tables: {
@@ -302,6 +310,155 @@ export type Database = {
 						foreignKeyName: 'attachments_user_id_fkey';
 						columns: ['user_id'];
 						referencedRelation: 'users';
+						referencedColumns: ['id'];
+					},
+				];
+			};
+			notifications: {
+				Row: {
+					id: string;
+					type: 'email' | 'in_app' | 'webhook';
+					recipients: string[];
+					template: string;
+					context: JsonValue;
+					status: 'sent' | 'failed';
+					error?: string;
+					metadata?: JsonValue;
+					created_at?: string;
+				};
+				Insert: {
+					id?: string;
+					type: 'email' | 'in_app' | 'webhook';
+					recipients: string[];
+					template: string;
+					context: JsonValue;
+					status: 'sent' | 'failed';
+					error?: string;
+					metadata?: JsonValue;
+					created_at?: string;
+				};
+				Update: {
+					id?: string;
+					type?: 'email' | 'in_app' | 'webhook';
+					recipients?: string[];
+					template?: string;
+					context?: JsonValue;
+					status?: 'sent' | 'failed';
+					error?: string;
+					metadata?: JsonValue;
+					created_at?: string;
+				};
+				Relationships: [];
+			};
+			user_notifications: {
+				Row: {
+					id: string;
+					user_id: string;
+					type: string;
+					message: string;
+					data?: JsonValue;
+					read: boolean;
+					created_at?: string;
+				};
+				Insert: {
+					id?: string;
+					user_id: string;
+					type: string;
+					message: string;
+					data?: JsonValue;
+					read?: boolean;
+					created_at?: string;
+				};
+				Update: {
+					id?: string;
+					user_id?: string;
+					type?: string;
+					message?: string;
+					data?: JsonValue;
+					read?: boolean;
+					created_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'user_notifications_user_id_fkey';
+						columns: ['user_id'];
+						referencedRelation: 'users';
+						referencedColumns: ['id'];
+					},
+				];
+			};
+			workflows: {
+				Row: {
+					id: string;
+					name: string;
+					description?: string;
+					trigger: JsonValue;
+					steps: JsonValue;
+					is_active: boolean;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Insert: {
+					id?: string;
+					name: string;
+					description?: string;
+					trigger: JsonValue;
+					steps: JsonValue;
+					is_active?: boolean;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Update: {
+					id?: string;
+					name?: string;
+					description?: string;
+					trigger?: JsonValue;
+					steps?: JsonValue;
+					is_active?: boolean;
+					created_at?: string;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
+			workflow_executions: {
+				Row: {
+					id: string;
+					workflow_id: string;
+					trigger_type: string;
+					context: JsonValue;
+					status: string;
+					started_at?: string;
+					completed_at?: string;
+					error?: string;
+					step_results: JsonValue;
+				};
+				Insert: {
+					id?: string;
+					workflow_id: string;
+					trigger_type: string;
+					context: JsonValue;
+					status: string;
+					started_at?: string;
+					completed_at?: string;
+					error?: string;
+					step_results: JsonValue;
+				};
+				Update: {
+					id?: string;
+					workflow_id?: string;
+					trigger_type?: string;
+					context?: JsonValue;
+					status?: string;
+					started_at?: string;
+					completed_at?: string;
+					error?: string;
+					step_results?: JsonValue;
+				};
+				Relationships: [
+					{
+						foreignKeyName: 'workflow_executions_workflow_id_fkey';
+						columns: ['workflow_id'];
+						referencedRelation: 'workflows';
 						referencedColumns: ['id'];
 					},
 				];

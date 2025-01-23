@@ -1,55 +1,65 @@
 export type WorkflowTriggerType =
 	| 'ticket_created'
-	| 'status_changed'
-	| 'priority_changed'
-	| 'assigned';
+	| 'ticket_updated'
+	| 'ticket_status_changed'
+	| 'ticket_priority_changed'
+	| 'ticket_assigned'
+	| 'ticket_commented'
+	| 'scheduled';
+
+export type WorkflowStepType = 'condition' | 'action' | 'delay' | 'notification';
 
 export interface WorkflowTrigger {
 	type: WorkflowTriggerType;
 	conditions: Record<string, unknown>;
 }
 
-export type WorkflowStepType = 'condition' | 'action' | 'delay' | 'notification';
-
 export interface BaseWorkflowStep {
 	id: string;
-	type: WorkflowStepType;
 	nextSteps: string[];
+}
+
+export interface ConditionConfig {
+	field: string;
+	operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+	value: string;
+}
+
+export interface ActionConfig {
+	action: 'update_ticket' | 'assign_ticket' | 'close_ticket';
+	field?: string;
+	value?: string;
+}
+
+export interface DelayConfig {
+	duration: number;
+	unit: 'seconds' | 'minutes' | 'hours' | 'days';
+}
+
+export interface NotificationConfig {
+	type: 'email' | 'in_app' | 'webhook';
+	template: string;
+	recipients: string[];
 }
 
 export interface ConditionStep extends BaseWorkflowStep {
 	type: 'condition';
-	config: {
-		field: string;
-		operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
-		value: unknown;
-	};
+	config: ConditionConfig;
 }
 
 export interface ActionStep extends BaseWorkflowStep {
 	type: 'action';
-	config: {
-		action: string;
-		params: Record<string, unknown>;
-	};
+	config: ActionConfig;
 }
 
 export interface DelayStep extends BaseWorkflowStep {
 	type: 'delay';
-	config: {
-		duration: number; // in seconds
-		durationType: 'seconds' | 'minutes' | 'hours' | 'days';
-	};
+	config: DelayConfig;
 }
 
 export interface NotificationStep extends BaseWorkflowStep {
 	type: 'notification';
-	config: {
-		type: 'email' | 'in_app' | 'webhook';
-		template: string;
-		recipients: string[];
-		data?: Record<string, unknown>;
-	};
+	config: NotificationConfig;
 }
 
 export type WorkflowStep = ConditionStep | ActionStep | DelayStep | NotificationStep;
@@ -57,7 +67,7 @@ export type WorkflowStep = ConditionStep | ActionStep | DelayStep | Notification
 export interface Workflow {
 	id: string;
 	name: string;
-	description?: string;
+	description: string;
 	trigger: WorkflowTrigger;
 	steps: WorkflowStep[];
 	isActive: boolean;
@@ -66,13 +76,13 @@ export interface Workflow {
 }
 
 export interface WorkflowContext {
-	workflowId: string;
-	trigger: WorkflowTrigger;
+	userId: string;
+	teamId: string;
+	ticketId?: string;
 	data: Record<string, unknown>;
-	user?: {
-		id: string;
-		email: string;
-		role: string;
+	trigger?: {
+		type: WorkflowTriggerType;
+		data?: Record<string, unknown>;
 	};
 }
 
@@ -82,7 +92,5 @@ export interface WorkflowResult {
 		stepId: string;
 		success: boolean;
 		error?: string;
-		output?: unknown;
 	}[];
-	error?: string;
 }
