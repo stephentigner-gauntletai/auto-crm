@@ -53,7 +53,7 @@
 
 ## Workflow Builder Interface
 
-- [ ] Create builder components:
+- [x] Create builder components:
     ```typescript
     // app/components/workflows/WorkflowBuilder.tsx
     export function WorkflowBuilder() {
@@ -84,14 +84,14 @@
       )
     }
     ```
-- [ ] Implement step types:
-    - [ ] Conditions
-    - [ ] Actions
-    - [ ] Delays
-    - [ ] Notifications
+- [x] Implement step types:
+    - [x] Conditions
+    - [x] Actions
+    - [x] Delays
+    - [x] Notifications
 - [ ] Add workflow validation:
-    - [ ] Visual validation
-    - [ ] Error highlighting
+    - [x] Visual validation
+    - [x] Error highlighting
     - [ ] Suggestions
     - [ ] Testing tools
 

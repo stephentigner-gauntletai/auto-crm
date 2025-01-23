@@ -19,10 +19,15 @@ import type {
 	NotificationConfig,
 	WorkflowStep,
 } from '@/lib/workflows/types';
+import { ValidationError } from '@/components/ui/validation-error';
 
 interface StepEditorProps {
 	steps: WorkflowStep[];
 	onChange: (steps: WorkflowStep[]) => void;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
 const stepTypes = [
@@ -70,8 +75,12 @@ function getDefaultConfig(
 	}
 }
 
-export function StepEditor({ steps, onChange }: StepEditorProps) {
+export function StepEditor({ steps, onChange, validationErrors = [] }: StepEditorProps) {
 	const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+
+	const getStepErrors = (stepId: string) => {
+		return validationErrors.filter((error) => error.field === `step_${stepId}`);
+	};
 
 	const addStep = (type: WorkflowStepType) => {
 		const baseStep = {
@@ -193,7 +202,12 @@ export function StepEditor({ steps, onChange }: StepEditorProps) {
 									<StepConfig
 										step={step}
 										onChange={(updates) => updateStep(step.id, updates)}
+										validationErrors={validationErrors}
 									/>
+
+									{getStepErrors(step.id).map((error, index) => (
+										<ValidationError key={index} message={error.message} />
+									))}
 
 									{step.nextSteps.length > 0 && (
 										<div className="pt-4">
@@ -239,25 +253,48 @@ export function StepEditor({ steps, onChange }: StepEditorProps) {
 interface StepConfigProps {
 	step: WorkflowStep;
 	onChange: (updates: Partial<Omit<WorkflowStep, 'type'>>) => void;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
-function StepConfig({ step, onChange }: StepConfigProps) {
+function StepConfig({ step, onChange, validationErrors = [] }: StepConfigProps) {
 	switch (step.type) {
 		case 'condition':
 			return (
-				<ConditionConfig config={step.config} onChange={(config) => onChange({ config })} />
+				<ConditionConfig
+					config={step.config}
+					onChange={(config) => onChange({ config })}
+					stepId={step.id}
+					validationErrors={validationErrors}
+				/>
 			);
 		case 'action':
 			return (
-				<ActionConfig config={step.config} onChange={(config) => onChange({ config })} />
+				<ActionConfig
+					config={step.config}
+					onChange={(config) => onChange({ config })}
+					stepId={step.id}
+					validationErrors={validationErrors}
+				/>
 			);
 		case 'delay':
-			return <DelayConfig config={step.config} onChange={(config) => onChange({ config })} />;
+			return (
+				<DelayConfig
+					config={step.config}
+					onChange={(config) => onChange({ config })}
+					stepId={step.id}
+					validationErrors={validationErrors}
+				/>
+			);
 		case 'notification':
 			return (
 				<NotificationConfig
 					config={step.config}
 					onChange={(config) => onChange({ config })}
+					stepId={step.id}
+					validationErrors={validationErrors}
 				/>
 			);
 		default:
@@ -268,9 +305,19 @@ function StepConfig({ step, onChange }: StepConfigProps) {
 interface ConditionConfigProps {
 	config: ConditionConfig;
 	onChange: (config: ConditionConfig) => void;
+	stepId: string;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
-function ConditionConfig({ config, onChange }: ConditionConfigProps) {
+function ConditionConfig({
+	config,
+	onChange,
+	stepId,
+	validationErrors = [],
+}: ConditionConfigProps) {
 	return (
 		<div className="space-y-4">
 			<div>
@@ -279,7 +326,17 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
 					value={config.field}
 					onChange={(e) => onChange({ ...config, field: e.target.value })}
 					placeholder="ticket.status"
+					className={
+						validationErrors.some((e) => e.field === `${stepId}.field`)
+							? 'border-destructive'
+							: ''
+					}
 				/>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.field`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 
 			<div>
@@ -290,7 +347,13 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
 						onChange({ ...config, operator: operator as ConditionConfig['operator'] })
 					}
 				>
-					<SelectTrigger>
+					<SelectTrigger
+						className={
+							validationErrors.some((e) => e.field === `${stepId}.operator`)
+								? 'border-destructive'
+								: ''
+						}
+					>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -301,6 +364,11 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
 						<SelectItem value="less_than">Less Than</SelectItem>
 					</SelectContent>
 				</Select>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.operator`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 
 			<div>
@@ -309,7 +377,17 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
 					value={config.value}
 					onChange={(e) => onChange({ ...config, value: e.target.value })}
 					placeholder="Value to compare"
+					className={
+						validationErrors.some((e) => e.field === `${stepId}.value`)
+							? 'border-destructive'
+							: ''
+					}
 				/>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.value`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 		</div>
 	);
@@ -318,9 +396,14 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
 interface ActionConfigProps {
 	config: ActionConfig;
 	onChange: (config: ActionConfig) => void;
+	stepId: string;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
-function ActionConfig({ config, onChange }: ActionConfigProps) {
+function ActionConfig({ config, onChange, stepId, validationErrors = [] }: ActionConfigProps) {
 	return (
 		<div className="space-y-4">
 			<div>
@@ -331,7 +414,13 @@ function ActionConfig({ config, onChange }: ActionConfigProps) {
 						onChange({ ...config, action: action as ActionConfig['action'] })
 					}
 				>
-					<SelectTrigger>
+					<SelectTrigger
+						className={
+							validationErrors.some((e) => e.field === `${stepId}.action`)
+								? 'border-destructive'
+								: ''
+						}
+					>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -340,6 +429,11 @@ function ActionConfig({ config, onChange }: ActionConfigProps) {
 						<SelectItem value="close_ticket">Close Ticket</SelectItem>
 					</SelectContent>
 				</Select>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.action`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 
 			{config.action === 'update_ticket' && (
@@ -350,7 +444,17 @@ function ActionConfig({ config, onChange }: ActionConfigProps) {
 							value={config.field ?? ''}
 							onChange={(e) => onChange({ ...config, field: e.target.value })}
 							placeholder="Field to update"
+							className={
+								validationErrors.some((e) => e.field === `${stepId}.field`)
+									? 'border-destructive'
+									: ''
+							}
 						/>
+						{validationErrors
+							.filter((e) => e.field === `${stepId}.field`)
+							.map((error, index) => (
+								<ValidationError key={index} message={error.message} />
+							))}
 					</div>
 					<div>
 						<Label>Value</Label>
@@ -358,7 +462,17 @@ function ActionConfig({ config, onChange }: ActionConfigProps) {
 							value={config.value ?? ''}
 							onChange={(e) => onChange({ ...config, value: e.target.value })}
 							placeholder="New value"
+							className={
+								validationErrors.some((e) => e.field === `${stepId}.value`)
+									? 'border-destructive'
+									: ''
+							}
 						/>
+						{validationErrors
+							.filter((e) => e.field === `${stepId}.value`)
+							.map((error, index) => (
+								<ValidationError key={index} message={error.message} />
+							))}
 					</div>
 				</>
 			)}
@@ -369,9 +483,14 @@ function ActionConfig({ config, onChange }: ActionConfigProps) {
 interface DelayConfigProps {
 	config: DelayConfig;
 	onChange: (config: DelayConfig) => void;
+	stepId: string;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
-function DelayConfig({ config, onChange }: DelayConfigProps) {
+function DelayConfig({ config, onChange, stepId, validationErrors = [] }: DelayConfigProps) {
 	return (
 		<div className="space-y-4">
 			<div>
@@ -383,7 +502,17 @@ function DelayConfig({ config, onChange }: DelayConfigProps) {
 						onChange({ ...config, duration: parseInt(e.target.value, 10) })
 					}
 					placeholder="Duration"
+					className={
+						validationErrors.some((e) => e.field === `${stepId}.duration`)
+							? 'border-destructive'
+							: ''
+					}
 				/>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.duration`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 
 			<div>
@@ -394,7 +523,13 @@ function DelayConfig({ config, onChange }: DelayConfigProps) {
 						onChange({ ...config, unit: unit as DelayConfig['unit'] })
 					}
 				>
-					<SelectTrigger>
+					<SelectTrigger
+						className={
+							validationErrors.some((e) => e.field === `${stepId}.unit`)
+								? 'border-destructive'
+								: ''
+						}
+					>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -404,6 +539,11 @@ function DelayConfig({ config, onChange }: DelayConfigProps) {
 						<SelectItem value="days">Days</SelectItem>
 					</SelectContent>
 				</Select>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.unit`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 		</div>
 	);
@@ -412,9 +552,19 @@ function DelayConfig({ config, onChange }: DelayConfigProps) {
 interface NotificationConfigProps {
 	config: NotificationConfig;
 	onChange: (config: NotificationConfig) => void;
+	stepId: string;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
-function NotificationConfig({ config, onChange }: NotificationConfigProps) {
+function NotificationConfig({
+	config,
+	onChange,
+	stepId,
+	validationErrors = [],
+}: NotificationConfigProps) {
 	return (
 		<div className="space-y-4">
 			<div>
@@ -425,7 +575,13 @@ function NotificationConfig({ config, onChange }: NotificationConfigProps) {
 						onChange({ ...config, type: type as NotificationConfig['type'] })
 					}
 				>
-					<SelectTrigger>
+					<SelectTrigger
+						className={
+							validationErrors.some((e) => e.field === `${stepId}.type`)
+								? 'border-destructive'
+								: ''
+						}
+					>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -434,6 +590,11 @@ function NotificationConfig({ config, onChange }: NotificationConfigProps) {
 						<SelectItem value="webhook">Webhook</SelectItem>
 					</SelectContent>
 				</Select>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.type`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 
 			<div>
@@ -442,7 +603,17 @@ function NotificationConfig({ config, onChange }: NotificationConfigProps) {
 					value={config.template}
 					onChange={(e) => onChange({ ...config, template: e.target.value })}
 					placeholder="Notification template"
+					className={
+						validationErrors.some((e) => e.field === `${stepId}.template`)
+							? 'border-destructive'
+							: ''
+					}
 				/>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.template`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 
 			<div>
@@ -456,7 +627,17 @@ function NotificationConfig({ config, onChange }: NotificationConfigProps) {
 						})
 					}
 					placeholder="Comma-separated list of recipients"
+					className={
+						validationErrors.some((e) => e.field === `${stepId}.recipients`)
+							? 'border-destructive'
+							: ''
+					}
 				/>
+				{validationErrors
+					.filter((e) => e.field === `${stepId}.recipients`)
+					.map((error, index) => (
+						<ValidationError key={index} message={error.message} />
+					))}
 			</div>
 		</div>
 	);

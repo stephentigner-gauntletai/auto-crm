@@ -5,6 +5,9 @@ import { TriggerConfig } from './TriggerConfig';
 import { StepEditor } from './StepEditor';
 import { WorkflowSettings } from './WorkflowSettings';
 import type { Workflow, WorkflowTrigger, WorkflowStep } from '@/lib/workflows/types';
+import { useWorkflowValidation } from '@/lib/hooks/useWorkflowValidation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface WorkflowBuilderProps {
 	workflow?: Workflow;
@@ -23,7 +26,13 @@ export function WorkflowBuilder({ workflow, onSave }: WorkflowBuilderProps) {
 	const [description, setDescription] = useState(workflow?.description || '');
 	const [isActive, setIsActive] = useState(workflow?.isActive ?? true);
 
+	const { isValid, validationState } = useWorkflowValidation(name, description, trigger, steps);
+
 	const handleSave = async () => {
+		if (!isValid) {
+			return;
+		}
+
 		await onSave({
 			name,
 			description,
@@ -45,6 +54,17 @@ export function WorkflowBuilder({ workflow, onSave }: WorkflowBuilderProps) {
 
 	return (
 		<div className="space-y-4">
+			{!isValid && validationState.global.errors.length > 0 && (
+				<Alert variant="destructive">
+					<AlertCircle className="h-4 w-4" />
+					<AlertDescription>
+						{validationState.global.errors.map((error, index) => (
+							<div key={index}>{error.message}</div>
+						))}
+					</AlertDescription>
+				</Alert>
+			)}
+
 			<Card>
 				<CardHeader>
 					<CardTitle>Workflow Builder</CardTitle>
@@ -57,10 +77,29 @@ export function WorkflowBuilder({ workflow, onSave }: WorkflowBuilderProps) {
 							<TabsTrigger value="settings">Settings</TabsTrigger>
 						</TabsList>
 						<TabsContent value="trigger">
-							<TriggerConfig trigger={trigger} onChange={setTrigger} />
+							<TriggerConfig
+								trigger={trigger}
+								onChange={setTrigger}
+								validationErrors={validationState.trigger.errors}
+							/>
 						</TabsContent>
 						<TabsContent value="steps">
-							<StepEditor steps={steps} onChange={setSteps} />
+							<StepEditor
+								steps={steps}
+								onChange={setSteps}
+								validationErrors={[
+									...Object.entries(validationState.steps).flatMap(
+										([stepId, result]) =>
+											result.errors.map((error) => ({
+												...error,
+												field: `${stepId}.${error.field}`,
+											}))
+									),
+									...validationState.global.errors.filter((error) =>
+										error.field.startsWith('step_')
+									),
+								]}
+							/>
 						</TabsContent>
 						<TabsContent value="settings">
 							<WorkflowSettings
@@ -69,6 +108,7 @@ export function WorkflowBuilder({ workflow, onSave }: WorkflowBuilderProps) {
 								isActive={isActive}
 								onChange={handleSettingsChange}
 								onSave={handleSave}
+								validationErrors={validationState.settings.errors}
 							/>
 						</TabsContent>
 					</Tabs>

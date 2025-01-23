@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
+import { ValidationError } from '@/components/ui/validation-error';
 
 interface WorkflowSettingsProps {
 	name: string;
@@ -11,6 +12,10 @@ interface WorkflowSettingsProps {
 	isActive: boolean;
 	onChange: (settings: { name: string; description: string; isActive: boolean }) => void;
 	onSave?: () => void;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
 export function WorkflowSettings({
@@ -19,7 +24,12 @@ export function WorkflowSettings({
 	isActive,
 	onChange,
 	onSave,
+	validationErrors = [],
 }: WorkflowSettingsProps) {
+	const getFieldErrors = (field: string) => {
+		return validationErrors.filter((error) => error.field === field);
+	};
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -34,7 +44,11 @@ export function WorkflowSettings({
 						})
 					}
 					placeholder="Enter workflow name"
+					className={getFieldErrors('name').length > 0 ? 'border-destructive' : ''}
 				/>
+				{getFieldErrors('name').map((error, index) => (
+					<ValidationError key={index} message={error.message} />
+				))}
 			</div>
 
 			<div>
@@ -49,7 +63,11 @@ export function WorkflowSettings({
 						})
 					}
 					placeholder="Enter workflow description"
+					className={getFieldErrors('description').length > 0 ? 'border-destructive' : ''}
 				/>
+				{getFieldErrors('description').map((error, index) => (
+					<ValidationError key={index} message={error.message} />
+				))}
 			</div>
 
 			<div className="flex items-center space-x-2">

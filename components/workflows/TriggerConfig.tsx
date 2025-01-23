@@ -8,10 +8,15 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import type { WorkflowTrigger, WorkflowTriggerType } from '@/lib/workflows/types';
+import { ValidationError } from '@/components/ui/validation-error';
 
 interface TriggerConfigProps {
 	trigger: WorkflowTrigger;
 	onChange: (trigger: WorkflowTrigger) => void;
+	validationErrors?: {
+		field: string;
+		message: string;
+	}[];
 }
 
 const TRIGGER_TYPES: { value: WorkflowTriggerType; label: string }[] = [
@@ -24,7 +29,11 @@ const TRIGGER_TYPES: { value: WorkflowTriggerType; label: string }[] = [
 	{ value: 'scheduled', label: 'Scheduled' },
 ];
 
-export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
+export function TriggerConfig({ trigger, onChange, validationErrors = [] }: TriggerConfigProps) {
+	const getFieldErrors = (field: string) => {
+		return validationErrors.filter((error) => error.field === field);
+	};
+
 	return (
 		<div className="space-y-6">
 			<div>
@@ -38,7 +47,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 						})
 					}
 				>
-					<SelectTrigger>
+					<SelectTrigger
+						className={getFieldErrors('type').length > 0 ? 'border-destructive' : ''}
+					>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -49,6 +60,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 						))}
 					</SelectContent>
 				</Select>
+				{getFieldErrors('type').map((error, index) => (
+					<ValidationError key={index} message={error.message} />
+				))}
 			</div>
 
 			{trigger.type === 'ticket_status_changed' && (
@@ -67,7 +81,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								})
 							}
 						>
-							<SelectTrigger>
+							<SelectTrigger
+								className={
+									getFieldErrors('fromStatus').length > 0
+										? 'border-destructive'
+										: ''
+								}
+							>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -78,6 +98,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								<SelectItem value="closed">Closed</SelectItem>
 							</SelectContent>
 						</Select>
+						{getFieldErrors('fromStatus').map((error, index) => (
+							<ValidationError key={index} message={error.message} />
+						))}
 					</div>
 
 					<div>
@@ -94,7 +117,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								})
 							}
 						>
-							<SelectTrigger>
+							<SelectTrigger
+								className={
+									getFieldErrors('toStatus').length > 0
+										? 'border-destructive'
+										: ''
+								}
+							>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -105,6 +134,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								<SelectItem value="closed">Closed</SelectItem>
 							</SelectContent>
 						</Select>
+						{getFieldErrors('toStatus').map((error, index) => (
+							<ValidationError key={index} message={error.message} />
+						))}
 					</div>
 				</div>
 			)}
@@ -125,7 +157,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								})
 							}
 						>
-							<SelectTrigger>
+							<SelectTrigger
+								className={
+									getFieldErrors('fromPriority').length > 0
+										? 'border-destructive'
+										: ''
+								}
+							>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -136,6 +174,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								<SelectItem value="urgent">Urgent</SelectItem>
 							</SelectContent>
 						</Select>
+						{getFieldErrors('fromPriority').map((error, index) => (
+							<ValidationError key={index} message={error.message} />
+						))}
 					</div>
 
 					<div>
@@ -152,7 +193,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								})
 							}
 						>
-							<SelectTrigger>
+							<SelectTrigger
+								className={
+									getFieldErrors('toPriority').length > 0
+										? 'border-destructive'
+										: ''
+								}
+							>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -163,6 +210,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								<SelectItem value="urgent">Urgent</SelectItem>
 							</SelectContent>
 						</Select>
+						{getFieldErrors('toPriority').map((error, index) => (
+							<ValidationError key={index} message={error.message} />
+						))}
 					</div>
 				</div>
 			)}
@@ -183,7 +233,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								})
 							}
 						>
-							<SelectTrigger>
+							<SelectTrigger
+								className={
+									getFieldErrors('scheduleType').length > 0
+										? 'border-destructive'
+										: ''
+								}
+							>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -191,6 +247,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 								<SelectItem value="cron">Cron</SelectItem>
 							</SelectContent>
 						</Select>
+						{getFieldErrors('scheduleType').map((error, index) => (
+							<ValidationError key={index} message={error.message} />
+						))}
 					</div>
 
 					{trigger.conditions?.scheduleType === 'interval' && (
@@ -210,7 +269,15 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 										})
 									}
 									min={1}
+									className={
+										getFieldErrors('interval').length > 0
+											? 'border-destructive'
+											: ''
+									}
 								/>
+								{getFieldErrors('interval').map((error, index) => (
+									<ValidationError key={index} message={error.message} />
+								))}
 							</div>
 
 							<div>
@@ -227,7 +294,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 										})
 									}
 								>
-									<SelectTrigger>
+									<SelectTrigger
+										className={
+											getFieldErrors('intervalType').length > 0
+												? 'border-destructive'
+												: ''
+										}
+									>
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
@@ -236,6 +309,9 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 										<SelectItem value="days">Days</SelectItem>
 									</SelectContent>
 								</Select>
+								{getFieldErrors('intervalType').map((error, index) => (
+									<ValidationError key={index} message={error.message} />
+								))}
 							</div>
 						</div>
 					)}
@@ -255,7 +331,13 @@ export function TriggerConfig({ trigger, onChange }: TriggerConfigProps) {
 									})
 								}
 								placeholder="* * * * *"
+								className={
+									getFieldErrors('cron').length > 0 ? 'border-destructive' : ''
+								}
 							/>
+							{getFieldErrors('cron').map((error, index) => (
+								<ValidationError key={index} message={error.message} />
+							))}
 						</div>
 					)}
 				</div>
